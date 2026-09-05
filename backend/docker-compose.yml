@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: phongtro-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME:-phongtro_db}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_NAME:-phongtro_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: phongtro-backend
+    restart: on-failure
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-phongtro_db}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      JWT_SECRET: ${JWT_SECRET:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+      JWT_REFRESH_EXPIRATION_MS: ${JWT_REFRESH_EXPIRATION_MS:-604800000}
+      AI_SERVICE_BASE_URL: ${AI_SERVICE_BASE_URL:-http://localhost:8000}
+      AI_SERVICE_TIMEOUT_SECONDS: ${AI_SERVICE_TIMEOUT_SECONDS:-5}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173,http://localhost:8080}
+    ports:
+      - "${SERVER_PORT:-8080}:8080"
+
+volumes:
+  pgdata:
+    driver: local
