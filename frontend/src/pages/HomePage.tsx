@@ -4,12 +4,17 @@ import { Link, useNavigate } from "react-router-dom";
 import RoomCard from "../components/RoomCard";
 import { rooms as mockRooms } from "../data/rooms";
 import { roomService } from "../services/roomService";
+import { favoriteService } from "../services/favoriteService";
+import { useAuth } from "../hooks/useAuth";
 import type { RoomSummary } from "../types/room";
 
 export default function HomePage() {
   const [featuredRooms, setFeaturedRooms] = useState<RoomSummary[]>(mockRooms);
   const [searchInput, setSearchInput] = useState("");
   const navigate = useNavigate();
+
+  const { isAuthenticated } = useAuth();
+  const [favoriteRoomIds, setFavoriteRoomIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     roomService.getApprovedRooms({ size: 4 })
@@ -22,6 +27,16 @@ export default function HomePage() {
         console.warn("Dùng dữ liệu khởi tạo:", err);
       });
   }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      favoriteService.getMyFavoriteRoomIds()
+        .then((ids) => setFavoriteRoomIds(new Set(ids)))
+        .catch(() => {});
+    } else {
+      setFavoriteRoomIds(new Set());
+    }
+  }, [isAuthenticated]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,7 +69,7 @@ export default function HomePage() {
 
             <input
               type="text"
-              placeholder="Nhập khu vực, quận (Cầu Giấy, Đống Đa...)"
+              placeholder="Nhập khu vực, quận (Bình Thạnh, Quận 1...)"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
             />
@@ -66,10 +81,10 @@ export default function HomePage() {
 
           <div className="popular-search">
             <span>Phổ biến:</span>
-            <Link to="/rooms">Cầu Giấy</Link>
-            <Link to="/rooms">Đống Đa</Link>
-            <Link to="/rooms">Nam Từ Liêm</Link>
-            <Link to="/rooms">Thanh Xuân</Link>
+            <Link to="/rooms?district=Bình Thạnh">Bình Thạnh</Link>
+            <Link to="/rooms?district=Quận 1">Quận 1</Link>
+            <Link to="/rooms?district=Thủ Đức">Thủ Đức</Link>
+            <Link to="/rooms?district=Gò Vấp">Gò Vấp</Link>
           </div>
         </div>
       </section>
@@ -89,7 +104,19 @@ export default function HomePage() {
 
           <div className="room-grid">
             {featuredRooms.map((room) => (
-              <RoomCard key={room.id} room={room} />
+              <RoomCard
+                key={room.id}
+                room={room}
+                initialFavorited={favoriteRoomIds.has(room.id)}
+                onFavoriteToggle={(id, favorited) => {
+                  setFavoriteRoomIds((prev) => {
+                    const next = new Set(prev);
+                    if (favorited) next.add(id);
+                    else next.delete(id);
+                    return next;
+                  });
+                }}
+              />
             ))}
           </div>
         </div>
@@ -105,8 +132,8 @@ export default function HomePage() {
           </div>
 
           <div className="area-grid">
-            {["Cầu Giấy", "Đống Đa", "Nam Từ Liêm", "Thanh Xuân"].map((area) => (
-              <Link to={`/rooms`} className="area-card" key={area}>
+            {["Bình Thạnh", "Quận 1", "Thủ Đức", "Gò Vấp"].map((area) => (
+              <Link to={`/rooms?district=${encodeURIComponent(area)}`} className="area-card" key={area}>
                 <h3>{area}</h3>
                 <p>Khám phá phòng trọ</p>
               </Link>

@@ -47,17 +47,17 @@ public class CreateRoomRequest {
     private String ward;
 
     @NotBlank(message = "Quận / Huyện không được để trống")
-    @Schema(description = "Quận / Huyện", example = "Cầu Giấy")
+    @Schema(description = "Quận / Huyện", example = "Bình Thạnh")
     private String district;
 
-    @Schema(description = "Tỉnh / Thành phố", example = "Hà Nội", defaultValue = "Hà Nội")
+    @Schema(description = "Tỉnh / Thành phố", example = "Hồ Chí Minh", defaultValue = "Hồ Chí Minh")
     @Builder.Default
-    private String city = "Hà Nội";
+    private String city = "Hồ Chí Minh";
 
-    @Schema(description = "Tọa độ vĩ độ (Latitude)", example = "21.0333")
+    @Schema(description = "Tọa độ vĩ độ (Latitude)", example = "10.7769")
     private Double latitude;
 
-    @Schema(description = "Tọa độ kinh độ (Longitude)", example = "105.7944")
+    @Schema(description = "Tọa độ kinh độ (Longitude)", example = "106.7009")
     private Double longitude;
 
     @Schema(description = "Danh sách ID các tiện ích có trong phòng", example = "[1, 2, 3, 4]")

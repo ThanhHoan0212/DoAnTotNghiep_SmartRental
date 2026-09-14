@@ -13,8 +13,8 @@ export default function PostRoomPage() {
   const [area, setArea] = useState('');
   const [address, setAddress] = useState('');
   const [ward, setWard] = useState('');
-  const [district, setDistrict] = useState('Cầu Giấy');
-  const [city] = useState('Hà Nội');
+  const [district, setDistrict] = useState('Bình Thạnh');
+  const [city] = useState('Hồ Chí Minh');
 
   // Tiện ích
   const [availableAmenities, setAvailableAmenities] = useState<Amenity[]>([]);
@@ -30,17 +30,26 @@ export default function PostRoomPage() {
   const [error, setError] = useState<string | null>(null);
 
   const districts = [
-    "Cầu Giấy",
-    "Đống Đa",
-    "Nam Từ Liêm",
-    "Thanh Xuân",
-    "Ba Đình",
-    "Hai Bà Trưng",
-    "Tây Hồ",
-    "Hà Đông",
-    "Hoàng Mai",
-    "Bắc Từ Liêm",
-    "Long Biên",
+    "Quận 1",
+    "Quận 3",
+    "Quận 4",
+    "Quận 5",
+    "Quận 6",
+    "Quận 7",
+    "Quận 8",
+    "Quận 10",
+    "Quận 11",
+    "Quận 12",
+    "Bình Thạnh",
+    "Gò Vấp",
+    "Phú Nhuận",
+    "Tân Bình",
+    "Tân Phú",
+    "Bình Tân",
+    "Thủ Đức",
+    "Nhà Bè",
+    "Hóc Môn",
+    "Bình Chánh",
   ];
 
   useEffect(() => {

@@ -114,7 +114,7 @@ public class RoomMapper {
                 .address(request.getAddress().trim())
                 .ward(request.getWard() != null ? request.getWard().trim() : null)
                 .district(request.getDistrict().trim())
-                .city(request.getCity() != null ? request.getCity().trim() : "Hà Nội")
+                .city(request.getCity() != null ? request.getCity().trim() : "Hồ Chí Minh")
                 .latitude(request.getLatitude())
                 .longitude(request.getLongitude())
                 .status(RoomStatus.PENDING) // Mặc định tin đăng mới ở trạng thái chờ duyệt PENDING

@@ -10,6 +10,7 @@ import ProfilePage from "./pages/ProfilePage";
 import PostRoomPage from "./pages/PostRoomPage";
 import RoomDetailPage from "./pages/RoomDetailPage";
 import RoomsPage from "./pages/RoomsPage";
+import FavoritesPage from "./pages/FavoritesPage";
 
 function App() {
   return (
@@ -27,6 +28,14 @@ function App() {
           element={
             <ProtectedRoute>
               <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/favorites"
+          element={
+            <ProtectedRoute>
+              <FavoritesPage />
             </ProtectedRoute>
           }
         />

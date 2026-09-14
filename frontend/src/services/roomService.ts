@@ -99,4 +99,42 @@ export const roomService = {
     const res = await api.get<Amenity[]>('/amenities');
     return res.data;
   },
+
+  /**
+   * Tìm kiếm phòng trọ đa tiêu chí nâng cao (POST /rooms/search)
+   */
+  async searchRooms(params: import('../types/room').RoomSearchRequest): Promise<PageResponse<RoomSummary>> {
+    const res = await api.post<PageResponse<RoomSummary>>('/rooms/search', params);
+    return res.data;
+  },
+
+  /**
+   * Tìm kiếm thông minh bằng ngôn ngữ tự nhiên (POST /rooms/search/nlp)
+   */
+  async searchByNlp(queryText: string, page = 0, size = 10): Promise<import('../types/room').NlpSearchResponse> {
+    const res = await api.post<import('../types/room').NlpSearchResponse>('/rooms/search/nlp', {
+      queryText,
+      page,
+      size,
+    });
+    return res.data;
+  },
+
+  /**
+   * Thống kê số lượng phòng theo quận/huyện (GET /rooms/districts-summary)
+   */
+  async getDistrictRoomCounts(): Promise<import('../types/room').DistrictCountResponse[]> {
+    const res = await api.get<import('../types/room').DistrictCountResponse[]>('/rooms/districts-summary');
+    return res.data;
+  },
+
+  /**
+   * Phân tích câu tìm kiếm tự nhiên (GET /rooms/search/parse)
+   */
+  async parseQuery(query: string): Promise<import('../types/room').ParsedQueryResponse> {
+    const res = await api.get<import('../types/room').ParsedQueryResponse>(
+      `/rooms/search/parse?query=${encodeURIComponent(query)}`
+    );
+    return res.data;
+  },
 };

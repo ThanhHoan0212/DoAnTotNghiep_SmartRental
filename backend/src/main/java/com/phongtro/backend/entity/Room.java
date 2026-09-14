@@ -59,7 +59,7 @@ public class Room extends BaseEntity {
 
     @Column(name = "city", nullable = false, length = 100)
     @Builder.Default
-    private String city = "Hà Nội";
+    private String city = "Hồ Chí Minh";
 
     @Column(name = "latitude")
     private Double latitude;

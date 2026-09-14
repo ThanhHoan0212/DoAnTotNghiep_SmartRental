@@ -74,3 +74,52 @@ export interface CreateRoomRequest {
 export interface UpdateRoomRequest extends Partial<CreateRoomRequest> {
   status?: RoomStatus;
 }
+
+export interface RoomSearchRequest {
+  keyword?: string;
+  district?: string;
+  ward?: string;
+  city?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  minArea?: number;
+  maxArea?: number;
+  amenityIds?: number[];
+  latitude?: number;
+  longitude?: number;
+  radiusKm?: number;
+  sortBy?: 'createdAt' | 'price' | 'area' | 'viewCount';
+  sortDirection?: 'asc' | 'desc';
+  page?: number;
+  size?: number;
+}
+
+export interface ParsedQueryResponse {
+  originalQuery?: string;
+  keyword?: string;
+  district?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  minArea?: number;
+  maxArea?: number;
+  detectedAmenities?: string[];
+  amenityIds?: number[];
+  source?: 'AI_SERVICE' | 'RULE_BASED_FALLBACK' | string;
+}
+
+export interface NlpSearchResponse {
+  parsedQuery: ParsedQueryResponse;
+  results: {
+    content: RoomSummary[];
+    pageNumber: number;
+    pageSize: number;
+    totalElements: number;
+    totalPages: number;
+    isLast: boolean;
+  };
+}
+
+export interface DistrictCountResponse {
+  district: string;
+  count: number;
+}

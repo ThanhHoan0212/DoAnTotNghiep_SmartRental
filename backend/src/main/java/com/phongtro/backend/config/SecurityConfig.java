@@ -51,6 +51,14 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_WHITE_LIST).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/amenities").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/rooms").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/rooms/{id:[0-9a-fA-F-]{36}}").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/rooms/search").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/rooms/search/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/rooms/search/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/rooms/districts-summary").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/favorites/{roomId:[0-9a-fA-F-]{36}}/status").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

@@ -80,13 +80,13 @@ class RoomServiceTest {
         sampleRoom = Room.builder()
                 .id(roomId)
                 .landlord(sampleLandlord)
-                .title("Phòng trọ Cầu Giấy")
+                .title("Phòng trọ Bình Thạnh")
                 .description("Mô tả phòng trọ")
                 .price(3500000.0)
                 .area(25.0)
-                .address("Số 10 Cầu Giấy")
-                .district("Cầu Giấy")
-                .city("Hà Nội")
+                .address("Số 123 Điện Biên Phủ")
+                .district("Bình Thạnh")
+                .city("Hồ Chí Minh")
                 .status(RoomStatus.PENDING)
                 .viewCount(10L)
                 .images(new ArrayList<>())
@@ -95,10 +95,10 @@ class RoomServiceTest {
 
         sampleRoomResponse = RoomResponse.builder()
                 .id(roomId)
-                .title("Phòng trọ Cầu Giấy")
+                .title("Phòng trọ Bình Thạnh")
                 .price(3500000.0)
                 .area(25.0)
-                .district("Cầu Giấy")
+                .district("Bình Thạnh")
                 .status(RoomStatus.PENDING)
                 .viewCount(10L)
                 .build();
@@ -108,11 +108,11 @@ class RoomServiceTest {
     @DisplayName("Chủ nhà đăng tin thành công - trạng thái ban đầu là PENDING")
     void createRoom_ByLandlord_Success_PendingStatus() {
         CreateRoomRequest request = CreateRoomRequest.builder()
-                .title("Phòng trọ Cầu Giấy")
+                .title("Phòng trọ Bình Thạnh")
                 .price(3500000.0)
                 .area(25.0)
-                .address("Số 10 Cầu Giấy")
-                .district("Cầu Giấy")
+                .address("Số 123 Điện Biên Phủ")
+                .district("Bình Thạnh")
                 .build();
 
         when(userRepository.findByEmail(sampleLandlord.getEmail())).thenReturn(Optional.of(sampleLandlord));
@@ -131,11 +131,11 @@ class RoomServiceTest {
     @DisplayName("Admin đăng tin thành công - được tự động duyệt APPROVED")
     void createRoom_ByAdmin_Success_ApprovedStatus() {
         CreateRoomRequest request = CreateRoomRequest.builder()
-                .title("Phòng trọ Cầu Giấy")
+                .title("Phòng trọ Bình Thạnh")
                 .price(3500000.0)
                 .area(25.0)
-                .address("Số 10 Cầu Giấy")
-                .district("Cầu Giấy")
+                .address("Số 123 Điện Biên Phủ")
+                .district("Bình Thạnh")
                 .build();
 
         when(userRepository.findByEmail(sampleAdmin.getEmail())).thenReturn(Optional.of(sampleAdmin));

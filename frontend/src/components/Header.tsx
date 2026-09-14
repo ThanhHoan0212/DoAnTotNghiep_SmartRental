@@ -52,7 +52,7 @@ export default function Header() {
         <nav className="nav">
           <Link to="/">Trang chủ</Link>
           <Link to="/rooms">Phòng trọ</Link>
-          <Link to="/rooms">Tìm phòng</Link>
+          <Link to="/favorites">Yêu thích</Link>
         </nav>
 
         <div className="header-actions">
@@ -164,6 +164,22 @@ export default function Header() {
                     onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                   >
                     👤 Thông tin cá nhân
+                  </Link>
+
+                  <Link
+                    to="/favorites"
+                    onClick={() => setDropdownOpen(false)}
+                    style={{
+                      display: "block",
+                      padding: "10px 16px",
+                      fontSize: "14px",
+                      color: "#1b2430",
+                      transition: "background 0.2s",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "#f8fafc")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                  >
+                    ❤️ Tin đã lưu
                   </Link>
 
                   {isLandlordOrAdmin && (
