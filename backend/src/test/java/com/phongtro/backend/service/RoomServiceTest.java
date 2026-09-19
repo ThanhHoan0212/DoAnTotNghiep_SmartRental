@@ -58,6 +58,7 @@ class RoomServiceTest {
                 .fullName("Chủ Nhà Nguyễn Văn B")
                 .role(Role.LANDLORD)
                 .status(UserStatus.ACTIVE)
+                .isIdentityVerified(true)
                 .build();
 
         sampleTenant = User.builder()
@@ -125,6 +126,27 @@ class RoomServiceTest {
         assertNotNull(response);
         assertEquals(RoomStatus.PENDING, sampleRoom.getStatus());
         verify(roomRepository, times(1)).save(sampleRoom);
+    }
+
+    @Test
+    @DisplayName("Chủ nhà chưa eKYC đăng tin - Bị chặn lỗi EKYC_REQUIRED")
+    void createRoom_WhenLandlordNotVerified_ShouldThrowEkycRequiredException() {
+        sampleLandlord.setIdentityVerified(false);
+        CreateRoomRequest request = CreateRoomRequest.builder()
+                .title("Phòng trọ Bình Thạnh")
+                .price(3500000.0)
+                .area(25.0)
+                .address("Số 123 Điện Biên Phủ")
+                .district("Bình Thạnh")
+                .build();
+
+        when(userRepository.findByEmail(sampleLandlord.getEmail())).thenReturn(Optional.of(sampleLandlord));
+
+        AppException ex = assertThrows(AppException.class, () ->
+                roomService.createRoom(request, sampleLandlord.getEmail()));
+
+        assertEquals(ErrorCode.EKYC_REQUIRED, ex.getErrorCode());
+        verify(roomRepository, never()).save(any());
     }
 
     @Test

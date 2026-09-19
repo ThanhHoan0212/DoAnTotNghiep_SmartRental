@@ -11,6 +11,8 @@ import PostRoomPage from "./pages/PostRoomPage";
 import RoomDetailPage from "./pages/RoomDetailPage";
 import RoomsPage from "./pages/RoomsPage";
 import FavoritesPage from "./pages/FavoritesPage";
+import ContractsPage from "./pages/ContractsPage";
+import EkycPage from "./pages/EkycPage";
 
 function App() {
   return (
@@ -32,10 +34,26 @@ function App() {
           }
         />
         <Route
+          path="/ekyc"
+          element={
+            <ProtectedRoute>
+              <EkycPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/favorites"
           element={
             <ProtectedRoute>
               <FavoritesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/contracts"
+          element={
+            <ProtectedRoute>
+              <ContractsPage />
             </ProtectedRoute>
           }
         />

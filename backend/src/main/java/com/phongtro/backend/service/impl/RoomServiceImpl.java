@@ -48,6 +48,11 @@ public class RoomServiceImpl implements RoomService {
             throw new AppException(ErrorCode.UNAUTHORIZED, "Tài khoản người thuê không có quyền đăng tin phòng trọ");
         }
 
+        // Bắt buộc xác thực danh tính eKYC đối với chủ nhà trước khi đăng tin (trừ ADMIN)
+        if (!landlord.isIdentityVerified() && landlord.getRole() != Role.ADMIN) {
+            throw new AppException(ErrorCode.EKYC_REQUIRED, "Bạn cần hoàn tất xác thực danh tính điện tử eKYC (độ tin cậy > 85%) trước khi đăng tin phòng trọ.");
+        }
+
         Room room = roomMapper.toEntity(request, landlord);
 
         // Xử lý tiện ích (Many-to-Many)

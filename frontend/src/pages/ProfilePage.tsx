@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { userService } from '../services/userService';
 import { ApiError } from '../services/api';
@@ -105,18 +106,18 @@ export default function ProfilePage() {
   const roleInfo = getRoleBadge(user?.role);
 
   return (
-    <main className="container" style={{ padding: '40px 0', minHeight: '80vh' }}>
-      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-        {/* Header Hồ sơ */}
+    <main className="page" style={{ padding: '40px 0', minHeight: '80vh' }}>
+      <div className="container" style={{ maxWidth: '800px', margin: '0 auto' }}>
+        {/* Header Hồ Sơ */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
           gap: '24px',
-          padding: '28px',
-          background: '#f8fafc',
-          borderRadius: '16px',
-          border: '1px solid #e2e8f0',
-          marginBottom: '32px'
+          background: '#ffffff',
+          padding: '32px',
+          borderRadius: '12px',
+          marginBottom: '28px',
+          border: '1px solid #e8ecef'
         }}>
           <div style={{
             width: '80px',
@@ -135,7 +136,7 @@ export default function ProfilePage() {
           </div>
 
           <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
               <h1 style={{ fontSize: '24px', margin: 0, fontWeight: 700 }}>{user?.fullName}</h1>
               <span style={{
                 fontSize: '12px',
@@ -147,6 +148,42 @@ export default function ProfilePage() {
               }}>
                 {roleInfo.label}
               </span>
+
+              {user?.isIdentityVerified ? (
+                <span style={{
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  padding: '3px 10px',
+                  borderRadius: '12px',
+                  background: '#ecfdf5',
+                  color: '#059669',
+                  border: '1px solid #a7f3d0',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}>
+                  ✓ Đã eKYC ({user.ekycConfidenceScore?.toFixed(1) || 90}%)
+                </span>
+              ) : (
+                <Link
+                  to="/ekyc"
+                  style={{
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    padding: '3px 10px',
+                    borderRadius: '12px',
+                    background: '#fef3c7',
+                    color: '#d97706',
+                    border: '1px solid #fde68a',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  🛡️ Chưa eKYC (Bấm xác thực)
+                </Link>
+              )}
             </div>
             <p style={{ margin: '6px 0 0 0', color: '#64748b', fontSize: '14px' }}>
               {user?.email} • Tham gia từ {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('vi-VN') : 'Gần đây'}
@@ -206,6 +243,73 @@ export default function ProfilePage() {
             borderRadius: '12px',
             border: '1px solid #e8ecef'
           }}>
+            {/* Thẻ trạng thái eKYC */}
+            <div style={{
+              background: user?.isIdentityVerified ? '#f0fdf4' : '#fffbeb',
+              border: `1px solid ${user?.isIdentityVerified ? '#bbf7d0' : '#fde68a'}`,
+              borderRadius: '10px',
+              padding: '16px 20px',
+              marginBottom: '24px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '14px',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '26px' }}>
+                  {user?.isIdentityVerified ? '🛡️' : '⚠️'}
+                </span>
+                <div>
+                  <div style={{
+                    fontWeight: 700,
+                    fontSize: '14px',
+                    color: user?.isIdentityVerified ? '#166534' : '#92400e',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    <span>{user?.isIdentityVerified ? 'Đã xác thực danh tính điện tử (eKYC)' : 'Chưa xác thực danh tính (eKYC)'}</span>
+                    {user?.isIdentityVerified && user?.ekycConfidenceScore && (
+                      <span style={{
+                        fontSize: '11px',
+                        background: '#dcfce7',
+                        color: '#15803d',
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        fontWeight: 700,
+                      }}>
+                        Độ tin cậy: {user.ekycConfidenceScore.toFixed(1)}%
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ fontSize: '13px', color: user?.isIdentityVerified ? '#15803d' : '#b45309', marginTop: '2px' }}>
+                    {user?.isIdentityVerified
+                      ? `Số CCCD: ${user.idCardNumber || '***'} • Chủ thẻ: ${user.idCardName || user.fullName} • Ngày duyệt: ${user.ekycVerifiedAt ? new Date(user.ekycVerifiedAt).toLocaleDateString('vi-VN') : 'Đã xác thực'}`
+                      : 'Bạn cần hoàn tất định danh eKYC qua CCCD và khuôn mặt (> 85%) để đăng tin hoặc gửi yêu cầu thuê phòng.'}
+                  </div>
+                </div>
+              </div>
+
+              <Link
+                to="/ekyc"
+                style={{
+                  background: user?.isIdentityVerified ? '#167c5a' : '#d97706',
+                  color: '#ffffff',
+                  fontWeight: 600,
+                  fontSize: '13px',
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                {user?.isIdentityVerified ? 'Xem chi tiết eKYC →' : 'Xác thực ngay →'}
+              </Link>
+            </div>
+
             {profileMsg && (
               <div style={{
                 background: profileMsg.type === 'success' ? '#dcfce7' : '#fee2e2',

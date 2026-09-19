@@ -11,6 +11,11 @@ export interface User {
   status: UserStatus;
   createdAt: string;
   updatedAt: string;
+  isIdentityVerified?: boolean;
+  idCardNumber?: string;
+  idCardName?: string;
+  ekycConfidenceScore?: number;
+  ekycVerifiedAt?: string;
 }
 
 export interface AuthResponse {

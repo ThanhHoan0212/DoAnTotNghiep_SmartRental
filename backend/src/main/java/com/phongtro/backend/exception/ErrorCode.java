@@ -29,7 +29,15 @@ public enum ErrorCode {
     USER_INACTIVE("USER_004", "Tài khoản của bạn chưa được kích hoạt", HttpStatus.FORBIDDEN),
     USER_BANNED("USER_005", "Tài khoản của bạn đã bị khóa do vi phạm chính sách", HttpStatus.FORBIDDEN),
     OLD_PASSWORD_INCORRECT("USER_006", "Mật khẩu cũ không chính xác", HttpStatus.BAD_REQUEST),
-    PASSWORD_RESET_TOKEN_INVALID("USER_007", "Mã xác thực đặt lại mật khẩu không hợp lệ hoặc đã hết hạn", HttpStatus.BAD_REQUEST);
+    PASSWORD_RESET_TOKEN_INVALID("USER_007", "Mã xác thực đặt lại mật khẩu không hợp lệ hoặc đã hết hạn", HttpStatus.BAD_REQUEST),
+
+    // Business & Contract errors
+    OPERATION_NOT_ALLOWED("BIZ_001", "Thao tác không được phép thực hiện", HttpStatus.BAD_REQUEST),
+    CONTRACT_NOT_FOUND("CON_001", "Không tìm thấy thông tin hợp đồng yêu cầu", HttpStatus.NOT_FOUND),
+
+    // eKYC errors
+    EKYC_VERIFICATION_FAILED("EKYC_001", "Xác thực danh tính eKYC không thành công", HttpStatus.BAD_REQUEST),
+    EKYC_REQUIRED("EKYC_002", "Tài khoản cần hoàn tất xác thực danh tính điện tử (eKYC) để thực hiện thao tác này", HttpStatus.FORBIDDEN);
 
     private final String code;
     private final String message;

@@ -57,3 +57,10 @@ app:
   ai-service:
     base-url: ${AI_SERVICE_BASE_URL:http://localhost:8000}
     timeout-seconds: ${AI_SERVICE_TIMEOUT_SECONDS:5}
+  fpt-ai:
+    api-key: ${FPT_AI_API_KEY:J9Zmq8YOudk0xlInGXQ2N8UF7RYTbviw}
+    ocr-url: ${FPT_AI_OCR_URL:https://api.fpt.ai/vision/idr/vnm}
+    facematch-url: ${FPT_AI_FACEMATCH_URL:https://api.fpt.ai/vision/ekyc/facematch/v4}
+    confidence-threshold: ${FPT_AI_CONFIDENCE_THRESHOLD:85.0}
+    mock-enabled: ${FPT_AI_MOCK_ENABLED:false}
+

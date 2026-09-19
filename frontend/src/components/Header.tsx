@@ -53,6 +53,7 @@ export default function Header() {
           <Link to="/">Trang chủ</Link>
           <Link to="/rooms">Phòng trọ</Link>
           <Link to="/favorites">Yêu thích</Link>
+          {isAuthenticated && <Link to="/contracts">Hợp đồng</Link>}
         </nav>
 
         <div className="header-actions">
@@ -105,8 +106,41 @@ export default function Header() {
                 </div>
 
                 <div style={{ textAlign: "left" }}>
-                  <div style={{ fontWeight: 600, fontSize: "14px", color: "#1b2430" }}>
-                    {user.fullName}
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <div style={{ fontWeight: 600, fontSize: "14px", color: "#1b2430" }}>
+                      {user.fullName}
+                    </div>
+                    {user.isIdentityVerified ? (
+                      <span
+                        title="Đã xác thực danh tính điện tử eKYC"
+                        style={{
+                          fontSize: "10px",
+                          fontWeight: 700,
+                          background: "#ecfdf5",
+                          color: "#059669",
+                          border: "1px solid #a7f3d0",
+                          borderRadius: "4px",
+                          padding: "1px 5px",
+                        }}
+                      >
+                        ✓ eKYC
+                      </span>
+                    ) : (
+                      <span
+                        title="Chưa xác thực eKYC"
+                        style={{
+                          fontSize: "10px",
+                          fontWeight: 600,
+                          background: "#fef3c7",
+                          color: "#d97706",
+                          border: "1px solid #fde68a",
+                          borderRadius: "4px",
+                          padding: "1px 5px",
+                        }}
+                      >
+                        Chưa eKYC
+                      </span>
+                    )}
                   </div>
                   <div
                     style={{
@@ -117,6 +151,7 @@ export default function Header() {
                       borderRadius: "6px",
                       background: roleInfo.bg,
                       color: roleInfo.color,
+                      marginTop: "2px",
                     }}
                   >
                     {roleInfo.label}
@@ -167,6 +202,33 @@ export default function Header() {
                   </Link>
 
                   <Link
+                    to="/ekyc"
+                    onClick={() => setDropdownOpen(false)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      padding: "10px 16px",
+                      fontSize: "14px",
+                      color: user.isIdentityVerified ? "#059669" : "#b45309",
+                      background: user.isIdentityVerified ? "#f0fdf4" : "#fffbeb",
+                      fontWeight: 600,
+                      borderTop: "1px solid #f1f5f9",
+                      borderBottom: "1px solid #f1f5f9",
+                      transition: "background 0.2s",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.filter = "brightness(0.96)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.filter = "none")}
+                  >
+                    <span>🛡️ Định danh eKYC</span>
+                    {user.isIdentityVerified ? (
+                      <span style={{ fontSize: "11px", color: "#059669", fontWeight: 700 }}>✓ Đã duyệt</span>
+                    ) : (
+                      <span style={{ fontSize: "11px", color: "#d97706", fontWeight: 700 }}>Cần làm ⚠️</span>
+                    )}
+                  </Link>
+
+                  <Link
                     to="/favorites"
                     onClick={() => setDropdownOpen(false)}
                     style={{
@@ -180,6 +242,22 @@ export default function Header() {
                     onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                   >
                     ❤️ Tin đã lưu
+                  </Link>
+
+                  <Link
+                    to="/contracts"
+                    onClick={() => setDropdownOpen(false)}
+                    style={{
+                      display: "block",
+                      padding: "10px 16px",
+                      fontSize: "14px",
+                      color: "#1b2430",
+                      transition: "background 0.2s",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "#f8fafc")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                  >
+                    📝 Quản lý hợp đồng
                   </Link>
 
                   {isLandlordOrAdmin && (

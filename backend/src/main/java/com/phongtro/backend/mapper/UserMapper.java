@@ -29,6 +29,9 @@ public class UserMapper {
                 .status(user.getStatus())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
+                .isIdentityVerified(user.isIdentityVerified())
+                .idCardName(user.getIdCardName())
+                .ekycConfidenceScore(user.getEkycConfidenceScore())
                 .build();
     }
 

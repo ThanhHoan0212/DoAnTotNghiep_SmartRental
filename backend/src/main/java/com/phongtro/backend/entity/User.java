@@ -54,4 +54,42 @@ public class User extends BaseEntity {
     @Column(name = "status", nullable = false, length = 20)
     @Builder.Default
     private UserStatus status = UserStatus.ACTIVE;
+
+    // eKYC (Electronic Know Your Customer) fields
+    @Column(name = "is_identity_verified", nullable = false)
+    @Builder.Default
+    private boolean isIdentityVerified = false;
+
+    @Column(name = "id_card_number", length = 20)
+    private String idCardNumber;
+
+    @Column(name = "id_card_name", length = 150)
+    private String idCardName;
+
+    @Column(name = "id_card_dob", length = 20)
+    private String idCardDob;
+
+    @Column(name = "id_card_address", length = 255)
+    private String idCardAddress;
+
+    @Column(name = "id_card_hometown", length = 255)
+    private String idCardHometown;
+
+    @Column(name = "id_card_issue_date", length = 30)
+    private String idCardIssueDate;
+
+    @Column(name = "ekyc_confidence_score")
+    private Double ekycConfidenceScore;
+
+    @Column(name = "ekyc_verified_at")
+    private java.time.Instant ekycVerifiedAt;
+
+    @Column(name = "id_card_front_url", length = 500)
+    private String idCardFrontUrl;
+
+    @Column(name = "id_card_back_url", length = 500)
+    private String idCardBackUrl;
+
+    @Column(name = "selfie_url", length = 500)
+    private String selfieUrl;
 }

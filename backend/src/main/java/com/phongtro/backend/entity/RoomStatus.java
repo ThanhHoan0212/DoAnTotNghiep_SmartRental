@@ -4,5 +4,6 @@ public enum RoomStatus {
     PENDING,
     APPROVED,
     REJECTED,
-    HIDDEN
+    HIDDEN,
+    RENTED
 }

@@ -44,4 +44,18 @@ public class UserResponse {
 
     @Schema(description = "Thời gian cập nhật gần nhất")
     private Instant updatedAt;
+
+    @com.fasterxml.jackson.annotation.JsonProperty("isIdentityVerified")
+    @Schema(description = "Trạng thái đã định danh eKYC thật", example = "true")
+    private boolean isIdentityVerified;
+
+    @Schema(description = "Họ và tên trên CCCD", example = "NGUYEN VAN A")
+    private String idCardName;
+
+    @Schema(description = "Điểm tin cậy eKYC (%)", example = "92.5")
+    private Double ekycConfidenceScore;
+
+    public boolean getIsIdentityVerified() {
+        return isIdentityVerified;
+    }
 }

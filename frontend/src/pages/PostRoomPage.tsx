@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { roomService } from '../services/roomService';
 import type { Amenity, RoomImageRequest } from '../types/room';
 import { ApiError } from '../services/api';
+import { useAuth } from '../hooks/useAuth';
 
 export default function PostRoomPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isVerified = Boolean(user?.isIdentityVerified || user?.role === 'ADMIN');
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -90,6 +93,11 @@ export default function PostRoomPage() {
     e.preventDefault();
     setError(null);
 
+    if (!isVerified) {
+      setError('Bạn cần hoàn tất xác thực danh tính eKYC trước khi đăng tin phòng trọ.');
+      return;
+    }
+
     if (!title.trim() || !price || !area || !address.trim() || !district) {
       setError('Vui lòng điền đầy đủ các trường thông tin bắt buộc (*)');
       return;
@@ -141,6 +149,54 @@ export default function PostRoomPage() {
           <h1 style={{ fontSize: '28px', fontWeight: 700, margin: '8px 0' }}>Đăng tin cho thuê phòng trọ</h1>
           <p style={{ color: '#64748b' }}>Điền đầy đủ thông tin để phòng của bạn tiếp cận hàng ngàn người thuê nhanh chóng.</p>
         </div>
+
+        {!isVerified && (
+          <div style={{
+            background: '#fffbeb',
+            border: '1px solid #fde68a',
+            borderRadius: '12px',
+            padding: '20px',
+            marginBottom: '24px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ fontSize: '24px' }}>🛡️</span>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#92400e' }}>
+                  Yêu cầu xác thực danh tính điện tử eKYC
+                </h3>
+                <p style={{ margin: '4px 0 0', fontSize: '14px', color: '#b45309' }}>
+                  Theo quy định an toàn của SmartRental, người dùng cần hoàn tất xác thực CCCD và khuôn mặt qua FPT.AI (độ tin cậy &gt; 85%) trước khi đăng tin cho thuê phòng để phòng chống tin ảo và lừa đảo.
+                </p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <Link
+                to="/ekyc"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: '#d97706',
+                  color: '#ffffff',
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  padding: '8px 18px',
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                }}
+              >
+                <span>Xác thực eKYC ngay</span>
+                <span>→</span>
+              </Link>
+              <span style={{ fontSize: '13px', color: '#78350f' }}>
+                Chỉ mất khoảng 1 phút để hoàn tất và được hệ thống AI duyệt tự động!
+              </span>
+            </div>
+          </div>
+        )}
 
         {error && (
           <div style={{
@@ -374,10 +430,19 @@ export default function PostRoomPage() {
           <button
             type="submit"
             className="btn btn-primary btn-full"
-            disabled={isSubmitting}
-            style={{ minHeight: '48px', fontSize: '16px' }}
+            disabled={isSubmitting || !isVerified}
+            style={{
+              minHeight: '48px',
+              fontSize: '16px',
+              opacity: !isVerified ? 0.6 : 1,
+              cursor: !isVerified ? 'not-allowed' : 'pointer',
+            }}
           >
-            {isSubmitting ? 'Đang tạo tin đăng...' : 'Đăng tin ngay'}
+            {!isVerified
+              ? '🛡️ Cần xác thực eKYC để đăng tin'
+              : isSubmitting
+              ? 'Đang tạo tin đăng...'
+              : 'Đăng tin ngay'}
           </button>
         </form>
       </div>
