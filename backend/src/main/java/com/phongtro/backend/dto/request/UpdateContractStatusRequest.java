@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 public class UpdateContractStatusRequest {
 
     @NotNull(message = "Trạng thái mới không được để trống")
-    @Schema(description = "Trạng thái mới: ACTIVE (Chấp thuận), REJECTED (Từ chối), CANCELLED (Hủy yêu cầu), TERMINATED (Thanh lý)", example = "ACTIVE")
+    @Schema(description = "Trạng thái mới: AWAITING_DEPOSIT (Chấp thuận và mở cọc), REJECTED (Từ chối), CANCELLED (Hủy yêu cầu), TERMINATED (Thanh lý)", example = "AWAITING_DEPOSIT")
     private ContractStatus status;
 
     @Schema(description = "Lý do từ chối, hủy hoặc thanh lý", example = "Chủ nhà đồng ý cho thuê từ đầu tháng 10")

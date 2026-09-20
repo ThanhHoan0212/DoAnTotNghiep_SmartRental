@@ -8,6 +8,7 @@ import com.phongtro.backend.exception.AppException;
 import com.phongtro.backend.exception.ErrorCode;
 import com.phongtro.backend.mapper.RoomMapper;
 import com.phongtro.backend.repository.AmenityRepository;
+import com.phongtro.backend.repository.ContractRepository;
 import com.phongtro.backend.repository.RoomRepository;
 import com.phongtro.backend.repository.UserRepository;
 import com.phongtro.backend.service.impl.RoomServiceImpl;
@@ -39,6 +40,9 @@ class RoomServiceTest {
 
     @Mock
     private RoomMapper roomMapper;
+
+    @Mock
+    private ContractRepository contractRepository;
 
     @InjectMocks
     private RoomServiceImpl roomService;
@@ -245,7 +249,7 @@ class RoomServiceTest {
     @DisplayName("Admin duyệt tin đăng - Chuyển trạng thái sang APPROVED")
     void updateRoomStatus_ByAdmin_Success() {
         UUID roomId = sampleRoom.getId();
-        when(roomRepository.findById(roomId)).thenReturn(Optional.of(sampleRoom));
+        when(roomRepository.findByIdForUpdate(roomId)).thenReturn(Optional.of(sampleRoom));
         when(roomRepository.save(sampleRoom)).thenReturn(sampleRoom);
         when(roomMapper.toRoomResponse(sampleRoom)).thenReturn(sampleRoomResponse);
 
@@ -254,5 +258,22 @@ class RoomServiceTest {
         assertNotNull(response);
         assertEquals(RoomStatus.APPROVED, sampleRoom.getStatus());
         verify(roomRepository, times(1)).save(sampleRoom);
+    }
+
+    @Test
+    void deletingRoomWithContractPreservesHistory() {
+        when(roomRepository.findByIdForUpdate(sampleRoom.getId())).thenReturn(Optional.of(sampleRoom));
+        when(userRepository.findByEmail(sampleLandlord.getEmail())).thenReturn(Optional.of(sampleLandlord));
+        when(contractRepository.existsByRoom(sampleRoom)).thenReturn(true);
+        assertThrows(AppException.class, () -> roomService.deleteRoom(sampleRoom.getId(), sampleLandlord.getEmail()));
+        verify(roomRepository, never()).delete(any(Room.class));
+    }
+
+    @Test
+    void adminCannotAdvertiseAnActivelyRentedRoomAsAvailable() {
+        when(roomRepository.findByIdForUpdate(sampleRoom.getId())).thenReturn(Optional.of(sampleRoom));
+        when(contractRepository.existsByRoomAndStatus(sampleRoom, ContractStatus.ACTIVE)).thenReturn(true);
+        assertThrows(AppException.class, () -> roomService.updateRoomStatus(sampleRoom.getId(), RoomStatus.APPROVED));
+        verify(roomRepository, never()).save(any());
     }
 }

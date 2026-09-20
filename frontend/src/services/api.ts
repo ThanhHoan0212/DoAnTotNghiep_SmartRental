@@ -1,18 +1,8 @@
 import type { ApiResponse, TokenRefreshResponse } from '../types/auth';
+import { parseApiResponse } from './apiResponse';
+export { ApiError } from './apiResponse';
 
 const BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
-
-export class ApiError extends Error {
-  public status: number;
-  public data?: any;
-
-  constructor(message: string, status: number, data?: any) {
-    super(message);
-    this.name = 'ApiError';
-    this.status = status;
-    this.data = data;
-  }
-}
 
 let isRefreshing = false;
 let refreshSubscribers: ((token: string) => void)[] = [];
@@ -94,28 +84,25 @@ export async function request<T>(
       if (newToken) {
         onRefreshed(newToken);
         headers.set('Authorization', `Bearer ${newToken}`);
-        return fetch(url, { ...options, headers }).then((res) => res.json());
+        return fetch(url, { ...options, headers }).then(parseApiResponse<T>);
       }
     } else {
       // Đợi refresh token hoàn tất rồi retry
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         subscribeTokenRefresh(async (newToken: string) => {
-          headers.set('Authorization', `Bearer ${newToken}`);
-          const retryRes = await fetch(url, { ...options, headers });
-          resolve(retryRes.json());
+          try {
+            headers.set('Authorization', `Bearer ${newToken}`);
+            const retryRes = await fetch(url, { ...options, headers });
+            resolve(await parseApiResponse<T>(retryRes));
+          } catch (error) {
+            reject(error);
+          }
         });
       });
     }
   }
 
-  const json: ApiResponse<T> = await response.json();
-
-  if (!response.ok || !json.success) {
-    const errorMsg = json.message || 'Đã xảy ra lỗi khi kết nối máy chủ';
-    throw new ApiError(errorMsg, response.status, json.data);
-  }
-
-  return json;
+  return parseApiResponse<T>(response);
 }
 
 export const api = {

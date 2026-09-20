@@ -1,5 +1,7 @@
 export type ContractStatus = 
   | 'PENDING' 
+  | 'AWAITING_DEPOSIT'
+  | 'AWAITING_SIGNATURES'
   | 'ACTIVE' 
   | 'REJECTED' 
   | 'EXPIRED' 
@@ -25,6 +27,18 @@ export interface ContractUserSummary {
 }
 
 export interface Contract {
+  closureRequests?: ClosureRequest[];
+  agreedEndDate?: string;
+  terminatedAt?: string;
+  requestCode?: string;
+  depositDeadline?: string;
+  depositPaidAt?: string;
+  paymentReference?: string;
+  formalizedAt?: string;
+  tenantSignedAt?: string;
+  landlordSignedAt?: string;
+  activatedAt?: string;
+  documentContent?: string;
   id: string;
   contractCode?: string;
   contractNumber?: string;
@@ -74,4 +88,29 @@ export interface CreateContractRequest {
 export interface UpdateContractStatusRequest {
   status: ContractStatus;
   reason?: string;
+}
+
+export type ClosureRefund = 'FULL' | 'PARTIAL' | 'NONE';
+export interface ClosureRequest {
+  requestId: string;
+  kind: 'CANCELLATION' | 'EARLY_TERMINATION';
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'COMPLETED' | 'LAPSED';
+  requestedBy: string;
+  reason: string;
+  requestedEndDate?: string;
+  refundType: ClosureRefund;
+  refundAmount: number;
+  settlementNote: string;
+  requestedAt: string;
+  respondedBy?: string;
+  respondedAt?: string;
+  responseReason?: string;
+  completedAt?: string;
+}
+export interface CreateClosureRequest {
+  reason: string;
+  requestedEndDate?: string;
+  refundType: ClosureRefund;
+  refundAmount: number;
+  settlementNote: string;
 }

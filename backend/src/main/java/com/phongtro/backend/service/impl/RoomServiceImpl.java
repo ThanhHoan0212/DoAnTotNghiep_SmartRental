@@ -11,6 +11,7 @@ import com.phongtro.backend.exception.AppException;
 import com.phongtro.backend.exception.ErrorCode;
 import com.phongtro.backend.mapper.RoomMapper;
 import com.phongtro.backend.repository.AmenityRepository;
+import com.phongtro.backend.repository.ContractRepository;
 import com.phongtro.backend.repository.RoomRepository;
 import com.phongtro.backend.repository.UserRepository;
 import com.phongtro.backend.service.RoomService;
@@ -37,6 +38,7 @@ public class RoomServiceImpl implements RoomService {
     private final UserRepository userRepository;
     private final AmenityRepository amenityRepository;
     private final RoomMapper roomMapper;
+    private final ContractRepository contractRepository;
 
     @Override
     @Transactional
@@ -141,7 +143,7 @@ public class RoomServiceImpl implements RoomService {
     @Override
     @Transactional
     public void deleteRoom(UUID roomId, String userEmail) {
-        Room room = roomRepository.findById(roomId)
+        Room room = roomRepository.findByIdForUpdate(roomId)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy phòng trọ"));
 
         User currentUser = userRepository.findByEmail(userEmail)
@@ -152,6 +154,9 @@ public class RoomServiceImpl implements RoomService {
             throw new AppException(ErrorCode.UNAUTHORIZED, "Bạn không có quyền xóa tin đăng này");
         }
 
+        if (contractRepository.existsByRoom(room)) {
+            throw new AppException(ErrorCode.OPERATION_NOT_ALLOWED, "Phòng đã phát sinh hợp đồng, không thể xóa lịch sử. Bạn có thể ẩn tin đăng.");
+        }
         roomRepository.delete(room);
         log.info("User [{}] deleted room listing [{}]", userEmail, roomId);
     }
@@ -264,9 +269,18 @@ public class RoomServiceImpl implements RoomService {
     @Override
     @Transactional
     public RoomResponse updateRoomStatus(UUID roomId, RoomStatus status) {
-        Room room = roomRepository.findById(roomId)
+        Room room = roomRepository.findByIdForUpdate(roomId)
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy phòng trọ"));
 
+        boolean hasActive = contractRepository.existsByRoomAndStatus(room, ContractStatus.ACTIVE);
+        boolean hasReservation = contractRepository.existsByRoomAndStatusIn(room,
+                List.of(ContractStatus.AWAITING_DEPOSIT, ContractStatus.AWAITING_SIGNATURES));
+        if ((hasReservation && status != RoomStatus.RESERVED) || (!hasReservation && status == RoomStatus.RESERVED)) {
+            throw new AppException(ErrorCode.OPERATION_NOT_ALLOWED, "Phòng đang giữ chỗ phải được cập nhật qua yêu cầu thuê");
+        }
+        if ((hasActive && status != RoomStatus.RENTED) || (!hasActive && status == RoomStatus.RENTED)) {
+            throw new AppException(ErrorCode.OPERATION_NOT_ALLOWED, "Trạng thái đã cho thuê phải được cập nhật qua hợp đồng");
+        }
         room.setStatus(status);
         Room updated = roomRepository.save(room);
         log.info("Admin updated room [{}] status to [{}]", roomId, status);

@@ -1,6 +1,6 @@
 import type { User } from './auth';
 
-export type RoomStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'HIDDEN' | 'RENTED';
+export type RoomStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'HIDDEN' | 'RESERVED' | 'RENTED';
 
 export interface Amenity {
   id: number;
