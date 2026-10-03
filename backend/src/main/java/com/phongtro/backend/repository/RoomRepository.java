@@ -43,7 +43,7 @@ public interface RoomRepository extends JpaRepository<Room, UUID>, JpaSpecificat
 
     @Query("SELECT new com.phongtro.backend.dto.response.DistrictCountResponse(r.district, COUNT(r)) " +
             "FROM Room r " +
-            "WHERE r.status = com.phongtro.backend.entity.RoomStatus.APPROVED AND r.district IS NOT NULL " +
+            "WHERE r.status IN (com.phongtro.backend.entity.RoomStatus.APPROVED, com.phongtro.backend.entity.RoomStatus.RESERVED, com.phongtro.backend.entity.RoomStatus.RENTED) AND r.district IS NOT NULL " +
             "GROUP BY r.district ORDER BY COUNT(r) DESC")
     java.util.List<com.phongtro.backend.dto.response.DistrictCountResponse> countRoomsByDistrict();
 }

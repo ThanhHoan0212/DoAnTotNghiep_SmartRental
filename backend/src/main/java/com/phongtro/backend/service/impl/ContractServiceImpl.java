@@ -324,24 +324,7 @@ public class ContractServiceImpl implements ContractService {
         if (room.getStatus() != RoomStatus.RESERVED || contract.getEndDate().isBefore(today())) {
             throw new AppException(ErrorCode.OPERATION_NOT_ALLOWED, "Phòng hoặc thời hạn thuê không còn phù hợp để thanh toán");
         }
-        Instant now = Instant.now();
-        contract.setDepositPaidAt(now);
-        contract.setPaymentReference("SIM-PAY-" + UUID.randomUUID());
-        contract.setFormalizedAt(now);
-        contract.setContractCode("HD-" + today().format(DateTimeFormatter.ofPattern("yyyyMM"))
-                + "-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
-        contract.setDocumentContent("HỢP ĐỒNG THUÊ PHÒNG — BẢN GIẢ LẬP\n"
-                + "Mã hợp đồng: " + contract.getContractCode() + "\n"
-                + "Chủ phòng: " + contract.getLandlord().getFullName() + " (" + contract.getLandlord().getEmail() + ")\n"
-                + "Người thuê: " + contract.getTenant().getFullName() + " (" + contract.getTenant().getEmail() + ")\n"
-                + "Phòng: " + room.getTitle() + "\nĐịa chỉ: " + room.getAddress() + "\n"
-                + "Thời hạn: " + contract.getStartDate() + " đến " + contract.getEndDate() + "\n"
-                + "Tiền thuê mỗi tháng: " + contract.getMonthlyRent() + " VNĐ\n"
-                + "Tiền cọc đã xác nhận (giả lập): " + contract.getDepositAmount() + " VNĐ\n"
-                + "Điều khoản bổ sung: " + (contract.getTerms() == null ? "Không có" : contract.getTerms()) + "\n"
-                + "Hợp đồng có hiệu lực khi cả người thuê và chủ phòng hoàn tất ký giả lập.\n"
-                + "Đây là môi trường mô phỏng: không thu tiền thật và không tạo chữ ký số được chứng thực.");
-        contract.setStatus(ContractStatus.AWAITING_SIGNATURES);
+        com.phongtro.backend.service.DepositFinalizer.apply(contract, room, "SIM-PAY-" + UUID.randomUUID());
         return contractMapper.toContractResponse(contractRepository.save(contract));
     }
 

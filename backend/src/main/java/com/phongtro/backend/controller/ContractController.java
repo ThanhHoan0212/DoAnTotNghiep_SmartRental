@@ -103,7 +103,7 @@ public class ContractController {
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Giả lập người thuê thanh toán cọc, không thu tiền thật")
     public ResponseEntity<ApiResponse<ContractResponse>> simulateDeposit(Authentication authentication, @PathVariable UUID id) {
-        return ResponseEntity.ok(ApiResponse.success(contractService.simulateDeposit(id, authentication.getName())));
+        throw new com.phongtro.backend.exception.AppException(com.phongtro.backend.exception.ErrorCode.OPERATION_NOT_ALLOWED, "Thanh toán giả lập đã tắt. Vui lòng thanh toán qua VNPAY.");
     }
 
     @PostMapping("/{id}/simulate-signature")

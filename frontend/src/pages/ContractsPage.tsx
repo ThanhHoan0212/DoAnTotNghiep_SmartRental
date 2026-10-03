@@ -1,3 +1,4 @@
+import { paymentService } from "../services/paymentService";
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   FileText,
@@ -129,15 +130,20 @@ export default function ContractsPage() {
   };
 
   const handleSimulation = async (contract: Contract, action: 'deposit' | 'signature') => {
-    if (action === 'deposit' && !window.confirm(`Xác nhận thanh toán cọc giả lập ${contract.depositAmount.toLocaleString('vi-VN')} đ? Không có tiền thật được chuyển.`)) return;
+    if (action === 'deposit' && !window.confirm(`Xác nhận thanh toán cọc  ${contract.depositAmount.toLocaleString('vi-VN')} đ? .`)) return;
     setIsProcessingAction(true);
     try {
-      const updated = action === 'deposit' ? await contractService.simulateDeposit(contract.id) : await contractService.simulateSignature(contract.id);
+      if (action === 'deposit') {
+        const payment = await paymentService.create(contract.id);
+        window.location.assign(payment.paymentUrl);
+        return;
+      }
+      const updated = await contractService.simulateSignature(contract.id);
       applyUpdate(updated);
-      setNotice(action === 'deposit' ? 'Đã thanh toán cọc giả lập. Hợp đồng đã sẵn sàng để ký.' : 'Đã ghi nhận chữ ký giả lập của bạn.');
+      setNotice('Đã ghi nhận chữ ký của bạn.');
       await loadContracts(true);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Không thể thực hiện thao tác giả lập.');
+      alert(err instanceof Error ? err.message : 'Không thể thực hiện thao tác .');
       await loadContracts();
     } finally {
       setIsProcessingAction(false);
@@ -149,7 +155,7 @@ export default function ContractsPage() {
     const code = contract.contractCode || contract.contractNumber || contract.id.slice(0, 8);
     if (
       !window.confirm(
-        `Xác nhận phê duyệt yêu cầu thuê phòng #${code}? Phòng sẽ được giữ chỗ trong 24 giờ để người thuê thanh toán cọc giả lập.`
+        `Xác nhận phê duyệt yêu cầu thuê phòng #${code}? Phòng sẽ được giữ chỗ trong 24 giờ để người thuê thanh toán cọc .`
       )
     ) {
       return;
@@ -161,7 +167,7 @@ export default function ContractsPage() {
         status: 'AWAITING_DEPOSIT',
       });
       applyUpdate(updated);
-      setNotice('Đã chấp nhận yêu cầu và mở thanh toán cọc giả lập.');
+      setNotice('Đã chấp nhận yêu cầu và mở thanh toán cọc.');
       await loadContracts(true);
     } catch (err: unknown) {
       console.error('Lỗi phê duyệt hợp đồng:', err);
@@ -238,7 +244,7 @@ export default function ContractsPage() {
               Quản lý hợp đồng thuê phòng
             </h1>
             <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>
-              Yêu cầu thuê → Chấp nhận → Thanh toán cọc → Tạo hợp đồng → Hai bên ký → Có hiệu lực. Thanh toán và chữ ký đều là giả lập.
+              Yêu cầu thuê → Chấp nhận → Thanh toán cọc → Tạo hợp đồng → Hai bên ký → Có hiệu lực.
             </p>
           </div>
 
@@ -248,7 +254,7 @@ export default function ContractsPage() {
           </Link>
         </div>
 
-        <p style={{ fontSize: 12, color: '#64748b' }}>Tự động đồng bộ mỗi 5 giây và khi quay lại trang.</p>
+        <p style={{ fontSize: 12, color: '#64748b' }}></p>
         {notice && <div role="status" style={{ padding: 14, background: '#ecfdf5', color: '#065f46', borderRadius: 10, marginBottom: 16 }}>{notice}</div>}
         {/* Tabs: Tenant vs Landlord */}
         <div className="contract-tabs">
@@ -510,7 +516,7 @@ export default function ContractsPage() {
                   <div style={{ padding: '12px 20px', background: '#f8fafc', fontSize: '13px' }}>
                     {contract.requestCode && <p>Mã yêu cầu: {contract.requestCode}</p>}
                     {contract.status === 'AWAITING_DEPOSIT' && contract.depositDeadline && <p>Hạn thanh toán cọc: {new Date(contract.depositDeadline).toLocaleString('vi-VN')}. Hết hạn sẽ giải phóng phòng.</p>}
-                    {contract.depositPaidAt && <p>Đã thanh toán giả lập: {new Date(contract.depositPaidAt).toLocaleString('vi-VN')} · {contract.paymentReference}</p>}
+                    {contract.depositPaidAt && <p>Đã xác nhận thanh toán: {new Date(contract.depositPaidAt).toLocaleString('vi-VN')} · {contract.paymentReference}</p>}
                     {contract.formalizedAt && <p>Hợp đồng được tạo: {new Date(contract.formalizedAt).toLocaleString('vi-VN')}</p>}
                     {contract.documentContent && <p>Người thuê: {contract.tenantSignedAt ? 'Đã ký giả lập' : 'Chưa ký'} · Chủ phòng: {contract.landlordSignedAt ? 'Đã ký giả lập' : 'Chưa ký'}</p>}
                     {contract.closureRequests?.some(r => r.status === 'PENDING') && <p style={{ color: '#b45309', fontWeight: 600 }}>Có yêu cầu hủy / chấm dứt đang chờ bên còn lại xác nhận. Xem chi tiết để phản hồi.</p>}
@@ -521,7 +527,7 @@ export default function ContractsPage() {
                   <div className="contract-actions">
                     {contract.status === 'AWAITING_DEPOSIT' && user?.id === contract.tenantId && (
                       <button className="btn btn-primary" disabled={isProcessingAction || Boolean(contract.depositDeadline && new Date(contract.depositDeadline).getTime() <= now)}
-                        onClick={() => handleSimulation(contract, 'deposit')}>Thanh toán cọc (giả lập)</button>
+                        onClick={() => handleSimulation(contract, 'deposit')}>Thanh toán cọc qua VNPAY</button>
                     )}
                     {(
                       <button className="btn btn-outline" disabled={isProcessingAction}

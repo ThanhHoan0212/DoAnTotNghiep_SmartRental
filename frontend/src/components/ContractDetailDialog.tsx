@@ -23,7 +23,7 @@ export default function ContractDetailDialog({ contract: c, userId, busy, accept
     (userId === c.tenantId && !c.tenantSignedAt) || (userId === c.landlordId && !c.landlordSignedAt)
   ));
   const milestones = [
-    ['Gửi yêu cầu thuê', c.createdAt], ['Thanh toán cọc giả lập', c.depositPaidAt],
+    ['Gửi yêu cầu thuê', c.createdAt], ['Thanh toán cọc', c.depositPaidAt],
     ['Tạo văn bản hợp đồng', c.formalizedAt], ['Người thuê ký giả lập', c.tenantSignedAt],
     ['Chủ nhà ký giả lập', c.landlordSignedAt], ['Hợp đồng có hiệu lực', c.activatedAt],
   ];
@@ -48,7 +48,7 @@ export default function ContractDetailDialog({ contract: c, userId, busy, accept
       </div></section>
       <section><h3>Chi phí & tiền cọc</h3><dl className="contract-detail-grid">
         <div><dt>Tiền thuê / tháng</dt><dd>{money(c.monthlyRent)}</dd></div><div><dt>Tiền cọc thỏa thuận</dt><dd>{money(c.depositAmount)}</dd></div>
-        <div><dt>Tiền thuê tháng đầu + tiền cọc</dt><dd>{money(c.monthlyRent + c.depositAmount)}</dd></div><div><dt>Trạng thái cọc</dt><dd>{c.depositPaidAt ? 'Đã thanh toán giả lập' : 'Chưa thanh toán'}</dd></div>
+        <div><dt>Tiền thuê tháng đầu + tiền cọc</dt><dd>{money(c.monthlyRent + c.depositAmount)}</dd></div><div><dt>Trạng thái cọc</dt><dd>{c.depositPaidAt ? 'Đã xác nhận thanh toán' : 'Chưa thanh toán'}</dd></div>
         {c.depositDeadline && <div><dt>Hạn thanh toán cọc</dt><dd>{date(c.depositDeadline)}</dd></div>}
         {c.paymentReference && <div><dt>Mã giao dịch giả lập</dt><dd>{c.paymentReference}</dd></div>}
       </dl></section>
@@ -56,7 +56,7 @@ export default function ContractDetailDialog({ contract: c, userId, busy, accept
         {c.cancellationReason && <div className="contract-detail-reason"><strong>Lý do từ chối / hủy / chấm dứt</strong><p>{c.cancellationReason}</p></div>}
       </section>
       {c.terms && <section><h3>Ghi chú & thỏa thuận</h3><p className="contract-detail-text">{c.terms}</p></section>}
-      <section><h3>Nội dung hợp đồng</h3>{c.documentContent ? <div className="contract-detail-document">{c.documentContent}</div> : <p>Chưa có văn bản hợp đồng. Hệ thống sẽ tạo nội dung sau khi thanh toán cọc giả lập thành công.</p>}</section>
+      <section><h3>Nội dung hợp đồng</h3>{c.documentContent ? <div className="contract-detail-document">{c.documentContent}</div> : <p>Chưa có văn bản hợp đồng. Hệ thống sẽ tạo nội dung sau khi thanh toán cọc thành công.</p>}</section>
       <section><h3>Xác nhận của hai bên</h3><div className="contract-detail-grid">{[['Người thuê', c.tenantSignedAt], ['Chủ nhà', c.landlordSignedAt]].map(([label, at]) => <div className="contract-detail-party" key={label}><strong>{label}</strong><p>{at ? 'Đã ký giả lập' : 'Chưa ký'}</p>{at && <small>{date(at)}</small>}</div>)}</div>
         {canSign && <label className="contract-detail-consent"><input type="checkbox" checked={accepted} disabled={busy} onChange={e => onAccept(e.target.checked)} /> Tôi đã đọc nội dung và đồng ý ký giả lập bằng tài khoản của mình.</label>}
       </section>

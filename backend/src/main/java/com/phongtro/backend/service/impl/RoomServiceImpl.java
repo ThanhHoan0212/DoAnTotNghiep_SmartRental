@@ -190,8 +190,8 @@ public class RoomServiceImpl implements RoomService {
         Specification<Room> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            // Chỉ lấy các tin đã được duyệt
-            predicates.add(cb.equal(root.get("status"), RoomStatus.APPROVED));
+            // Giữ tin đã duyệt hiển thị xuyên suốt vòng đời hợp đồng.
+            predicates.add(root.get("status").in(RoomStatus.APPROVED, RoomStatus.RESERVED, RoomStatus.RENTED));
 
             if (district != null && !district.isBlank()) {
                 predicates.add(cb.like(cb.lower(root.get("district")), "%" + district.trim().toLowerCase() + "%"));

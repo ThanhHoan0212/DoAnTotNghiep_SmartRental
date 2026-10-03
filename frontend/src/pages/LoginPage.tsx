@@ -14,7 +14,9 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const redirectPath = (location.state as any)?.from?.pathname || '/';
+  const from = (location.state as { from?: { pathname?: string; search?: string; hash?: string } } | null)?.from;
+  const redirectPath = from?.pathname?.startsWith('/') && !from.pathname.startsWith('//')
+    ? from.pathname + (from.search || '') + (from.hash || '') : '/';
 
   useEffect(() => {
     if (isAuthenticated) {
