@@ -117,7 +117,7 @@ export const RentalRequestModal: React.FC<RentalRequestModalProps> = ({
         <div className="modal-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <FileText size={20} color="#167c5a" />
-            <h3>Gửi yêu cầu thuê phòng & Đặt cọc</h3>
+            <h3>Gửi yêu cầu thuê phòng</h3>
           </div>
           <button type="button" className="modal-close-btn" onClick={onClose} aria-label="Đóng">
             <X size={20} />
@@ -147,7 +147,7 @@ export const RentalRequestModal: React.FC<RentalRequestModalProps> = ({
                   <span>Yêu cầu xác thực danh tính điện tử eKYC</span>
                 </div>
                 <div style={{ lineHeight: 1.5, color: '#78350f' }}>
-                  Để hợp đồng thuê phòng có giá trị pháp lý và bảo vệ quyền lợi đặt cọc của bạn, hệ thống yêu cầu xác thực người dùng thật qua CCCD &amp; nhận diện khuôn mặt (FPT.AI &gt; 85%).
+                  Vui lòng xác thực danh tính trước khi gửi yêu cầu. Sau khi chủ phòng chấp nhận, bạn mới có thể thanh toán cọc và ký hợp đồng bằng các thao tác giả lập.
                 </div>
                 <button
                   type="button"

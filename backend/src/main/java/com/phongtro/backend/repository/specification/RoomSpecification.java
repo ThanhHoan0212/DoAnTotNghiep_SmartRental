@@ -22,8 +22,8 @@ public class RoomSpecification {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            // 1. Chỉ tìm kiếm các tin đã được Admin duyệt (APPROVED)
-            predicates.add(cb.equal(root.get("status"), RoomStatus.APPROVED));
+            // Tin đã duyệt vẫn công khai khi đang giữ chỗ hoặc đã cho thuê.
+            predicates.add(root.get("status").in(RoomStatus.APPROVED, RoomStatus.RESERVED, RoomStatus.RENTED));
 
             // 2. Lọc theo từ khóa (khớp trong tiêu đề, mô tả, địa chỉ, phường, quận)
             if (request.getKeyword() != null && !request.getKeyword().trim().isBlank()) {

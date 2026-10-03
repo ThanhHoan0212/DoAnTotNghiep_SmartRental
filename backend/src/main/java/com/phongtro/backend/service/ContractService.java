@@ -10,6 +10,15 @@ import java.util.UUID;
 
 public interface ContractService {
 
+    ContractResponse requestClosure(UUID id, com.phongtro.backend.dto.request.CreateClosureRequest request, String email);
+    ContractResponse respondClosure(UUID id, UUID requestId, com.phongtro.backend.dto.request.RespondClosureRequest request, String email);
+
+    void expireContract(UUID contractId);
+
+    ContractResponse simulateDeposit(UUID contractId, String email);
+
+    ContractResponse simulateSignature(UUID contractId, String email);
+
     /**
      * Người thuê gửi yêu cầu thuê phòng trọ (Tạo hợp đồng ở trạng thái PENDING)
      */
@@ -37,9 +46,9 @@ public interface ContractService {
 
     /**
      * Cập nhật trạng thái hợp đồng:
-     * - Chủ nhà: Duyệt (ACTIVE), Từ chối (REJECTED), hoặc Thanh lý trước hạn (TERMINATED)
+     * - Chủ nhà: Duyệt mở cọc (AWAITING_DEPOSIT), Từ chối (REJECTED)
      * - Người thuê: Hủy yêu cầu (CANCELLED) nếu còn PENDING
-     * - Admin: Toàn quyền cập nhật
+     * - Admin: Không được bỏ qua xác nhận hai bên khi chấm dứt
      */
     ContractResponse updateContractStatus(UUID contractId, UpdateContractStatusRequest request, String userEmail);
 }

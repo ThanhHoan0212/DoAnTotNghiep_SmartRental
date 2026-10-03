@@ -16,6 +16,13 @@ import java.util.UUID;
 @Repository
 public interface ContractRepository extends JpaRepository<Contract, UUID> {
 
+    @org.springframework.data.jpa.repository.Query("select c.id from Contract c where (c.status = com.phongtro.backend.entity.ContractStatus.ACTIVE and (c.endDate < :today or c.agreedEndDate <= :today)) or (c.status = com.phongtro.backend.entity.ContractStatus.AWAITING_DEPOSIT and c.depositDeadline <= :now) order by c.endDate, c.id")
+    java.util.List<UUID> findExpiredActiveIds(@org.springframework.data.repository.query.Param("today") java.time.LocalDate today, @org.springframework.data.repository.query.Param("now") java.time.Instant now, Pageable pageable);
+
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @org.springframework.data.jpa.repository.Query("select c from Contract c where c.id = :id")
+    Optional<Contract> findByIdForUpdate(UUID id);
+
     Optional<Contract> findByContractCode(String contractCode);
 
     Page<Contract> findByTenantOrderByCreatedAtDesc(User tenant, Pageable pageable);
@@ -37,6 +44,12 @@ public interface ContractRepository extends JpaRepository<Contract, UUID> {
     boolean existsByTenantAndRoomAndStatusIn(User tenant, Room room, Collection<ContractStatus> statuses);
 
     boolean existsByRoomAndStatus(Room room, ContractStatus status);
+
+    boolean existsByRoomAndStatusAndIdNot(Room room, ContractStatus status, UUID id);
+
+    boolean existsByRoom(Room room);
+
+    boolean existsByRoomAndStatusIn(Room room, Collection<ContractStatus> statuses);
 
     java.util.List<Contract> findByRoomAndStatusAndIdNot(Room room, ContractStatus status, UUID excludeId);
 

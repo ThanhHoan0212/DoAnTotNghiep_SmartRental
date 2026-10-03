@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { paymentService } from "../services/paymentService";
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   FileText,
   Calendar,
@@ -14,6 +15,7 @@ import {
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { contractService } from '../services/contractService';
+import ContractDetailDialog from '../components/ContractDetailDialog';
 import type { Contract, ContractStatus } from '../types/contract';
 
 export default function ContractsPage() {
@@ -21,13 +23,14 @@ export default function ContractsPage() {
 
   // Active Tab: 'tenant' (Hợp đồng thuê của tôi) hoặc 'landlord' (Quản lý khách thuê)
   const isLandlordOrAdmin = user?.role === 'LANDLORD' || user?.role === 'ADMIN';
-  const [activeTab, setActiveTab] = useState<'tenant' | 'landlord'>(
-    isLandlordOrAdmin ? 'landlord' : 'tenant'
+  const [activeTab, setActiveTab] = useState<'tenant' | 'landlord' | 'admin'>(
+    user?.role === 'ADMIN' ? 'admin' : isLandlordOrAdmin ? 'landlord' : 'tenant'
   );
 
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const loadSequence = useRef(0);
 
   // Pagination
   const [page, setPage] = useState<number>(0);
@@ -35,7 +38,7 @@ export default function ContractsPage() {
   const [totalElements, setTotalElements] = useState<number>(0);
 
   // Filter status
-  const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
+  const [selectedStatus, setSelectedStatus] = useState<ContractStatus | 'ALL'>('ALL');
 
   // Dialog cập nhật trạng thái (Từ chối / Hủy)
   const [actionTarget, setActionTarget] = useState<{
@@ -46,43 +49,113 @@ export default function ContractsPage() {
   const [actionReason, setActionReason] = useState<string>('');
   const [isProcessingAction, setIsProcessingAction] = useState<boolean>(false);
 
-  const loadContracts = useCallback(async () => {
-    setIsLoading(true);
+  const [now, setNow] = useState(() => Date.now());
+  const [notice, setNotice] = useState<string | null>(null);
+  const loadContracts = useCallback(async (background = false) => {
+    const sequence = ++loadSequence.current;
+    if (!background) setIsLoading(true);
     setError(null);
     try {
       let res;
+      const status = selectedStatus === 'ALL' ? undefined : selectedStatus;
       if (activeTab === 'tenant') {
-        res = await contractService.getMyTenantContracts(page, 10);
+        res = await contractService.getMyTenantContracts(page, 10, status);
+      } else if (activeTab === 'admin') {
+        res = await contractService.getAllContractsAdmin(page, 10, status);
       } else {
-        res = await contractService.getMyLandlordContracts(page, 10);
+        res = await contractService.getMyLandlordContracts(page, 10, status);
       }
+      if (sequence !== loadSequence.current) return;
+      if (page > 0 && page >= res.totalPages) {
+        setPage(Math.max(0, res.totalPages - 1));
+        return;
+      }
+      setNow(Date.now());
       setContracts(res.content || []);
       setTotalPages(res.totalPages || 1);
       setTotalElements(res.totalElements || 0);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      if (sequence !== loadSequence.current) return;
       console.error('Lỗi tải danh sách hợp đồng:', err);
-      setError(err.response?.data?.message || 'Không thể tải danh sách hợp đồng.');
+      setError(err instanceof Error ? err.message : 'Không thể tải danh sách hợp đồng.');
     } finally {
-      setIsLoading(false);
+      if (sequence === loadSequence.current) setIsLoading(false);
     }
-  }, [activeTab, page]);
+  }, [activeTab, page, selectedStatus]);
 
   useEffect(() => {
-    loadContracts();
+    const timer = window.setTimeout(() => void loadContracts(), 0);
+    return () => { window.clearTimeout(timer); loadSequence.current++; };
   }, [loadContracts]);
 
-  // Lọc theo trạng thái ở client side (hoặc kết hợp với backend)
-  const filteredContracts = contracts.filter((c) => {
-    if (selectedStatus === 'ALL') return true;
-    return c.status === selectedStatus;
-  });
+  const filteredContracts = contracts;
+  const [documentTarget, setDocumentTarget] = useState<Contract | null>(null);
+  const [acceptedDocument, setAcceptedDocument] = useState(false);
+
+  const detailId = documentTarget?.id;
+  useEffect(() => {
+    let disposed = false;
+    let running = false;
+    const refresh = async () => {
+      if (document.hidden || running || isProcessingAction) return;
+      running = true;
+      try {
+        await Promise.all([loadContracts(true), detailId ? contractService.getContractDetail(detailId).then(detail => {
+          if (!disposed) setDocumentTarget(current => current?.id === detail.id ? detail : current);
+        }) : Promise.resolve()]);
+      } catch (err) {
+        if (!disposed) setError(err instanceof Error ? err.message : 'Không thể đồng bộ chi tiết hợp đồng.');
+      } finally { running = false; }
+    };
+    const initial = window.setTimeout(() => void refresh(), 0);
+    const timer = window.setInterval(() => void refresh(), 5000);
+    window.addEventListener('focus', refresh);
+    window.addEventListener('online', refresh);
+    document.addEventListener('visibilitychange', refresh);
+    return () => {
+      disposed = true;
+      window.clearTimeout(initial);
+      window.clearInterval(timer);
+      window.removeEventListener('focus', refresh);
+      window.removeEventListener('online', refresh);
+      document.removeEventListener('visibilitychange', refresh);
+    };
+  }, [loadContracts, detailId, isProcessingAction]);
+
+  const applyUpdate = (updated: Contract) => {
+    loadSequence.current++;
+    setContracts(current => current.map(item => item.id === updated.id ? updated : item));
+    setDocumentTarget(current => current?.id === updated.id ? updated : current);
+    setAcceptedDocument(false);
+  };
+
+  const handleSimulation = async (contract: Contract, action: 'deposit' | 'signature') => {
+    if (action === 'deposit' && !window.confirm(`Xác nhận thanh toán cọc  ${contract.depositAmount.toLocaleString('vi-VN')} đ? .`)) return;
+    setIsProcessingAction(true);
+    try {
+      if (action === 'deposit') {
+        const payment = await paymentService.create(contract.id);
+        window.location.assign(payment.paymentUrl);
+        return;
+      }
+      const updated = await contractService.simulateSignature(contract.id);
+      applyUpdate(updated);
+      setNotice('Đã ghi nhận chữ ký của bạn.');
+      await loadContracts(true);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Không thể thực hiện thao tác .');
+      await loadContracts();
+    } finally {
+      setIsProcessingAction(false);
+    }
+  };
 
   // Xử lý Phê duyệt hợp đồng (Landlord)
   const handleApprove = async (contract: Contract) => {
     const code = contract.contractCode || contract.contractNumber || contract.id.slice(0, 8);
     if (
       !window.confirm(
-        `Xác nhận phê duyệt yêu cầu thuê phòng #${code}? Phòng trọ sẽ được chuyển sang trạng thái "ĐÃ CHO THUÊ".`
+        `Xác nhận phê duyệt yêu cầu thuê phòng #${code}? Phòng sẽ được giữ chỗ trong 24 giờ để người thuê thanh toán cọc .`
       )
     ) {
       return;
@@ -90,14 +163,15 @@ export default function ContractsPage() {
 
     try {
       setIsProcessingAction(true);
-      await contractService.updateContractStatus(contract.id, {
-        status: 'ACTIVE',
+      const updated = await contractService.updateContractStatus(contract.id, {
+        status: 'AWAITING_DEPOSIT',
       });
-      alert('Đã phê duyệt hợp đồng thành công!');
-      loadContracts();
-    } catch (err: any) {
+      applyUpdate(updated);
+      setNotice('Đã chấp nhận yêu cầu và mở thanh toán cọc.');
+      await loadContracts(true);
+    } catch (err: unknown) {
       console.error('Lỗi phê duyệt hợp đồng:', err);
-      alert(err.response?.data?.message || 'Có lỗi xảy ra khi phê duyệt hợp đồng.');
+      alert(err instanceof Error ? err.message : 'Có lỗi xảy ra khi phê duyệt hợp đồng.');
     } finally {
       setIsProcessingAction(false);
     }
@@ -116,20 +190,21 @@ export default function ContractsPage() {
   // Xác nhận thực thi Từ chối / Hủy / Chấm dứt
   const handleConfirmAction = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!actionTarget) return;
+    if (!actionTarget || !actionReason.trim()) return;
 
     try {
       setIsProcessingAction(true);
-      await contractService.updateContractStatus(actionTarget.contract.id, {
+      const updated = await contractService.updateContractStatus(actionTarget.contract.id, {
         status: actionTarget.targetStatus,
         reason: actionReason.trim() || undefined,
       });
-      alert(`Thao tác thành công: ${actionTarget.title}`);
+      applyUpdate(updated);
+      setNotice(`Thao tác thành công: ${actionTarget.title}`);
       setActionTarget(null);
-      loadContracts();
-    } catch (err: any) {
+      await loadContracts(true);
+    } catch (err: unknown) {
       console.error('Lỗi xử lý hợp đồng:', err);
-      alert(err.response?.data?.message || 'Có lỗi xảy ra.');
+      alert(err instanceof Error ? err.message : 'Có lỗi xảy ra.');
     } finally {
       setIsProcessingAction(false);
     }
@@ -140,6 +215,10 @@ export default function ContractsPage() {
     switch (status) {
       case 'PENDING':
         return <span className="status-badge status-pending"><Clock size={13} /> Chờ duyệt</span>;
+      case 'AWAITING_DEPOSIT':
+        return <span className="status-badge status-pending">Chờ thanh toán cọc</span>;
+      case 'AWAITING_SIGNATURES':
+        return <span className="status-badge status-pending">Chờ hai bên ký</span>;
       case 'ACTIVE':
         return <span className="status-badge status-active"><CheckCircle2 size={13} /> Đang hiệu lực</span>;
       case 'REJECTED':
@@ -147,7 +226,7 @@ export default function ContractsPage() {
       case 'EXPIRED':
         return <span className="status-badge status-expired"><Clock size={13} /> Đã hết hạn</span>;
       case 'TERMINATED':
-        return <span className="status-badge status-terminated"><AlertTriangle size={13} /> Đã thanh lý</span>;
+        return <span className="status-badge status-terminated"><AlertTriangle size={13} /> Đã chấm dứt</span>;
       case 'CANCELLED':
         return <span className="status-badge status-cancelled"><XCircle size={13} /> Đã hủy</span>;
       default:
@@ -162,10 +241,10 @@ export default function ContractsPage() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
           <div>
             <h1 style={{ margin: '0 0 6px', fontSize: '26px', color: '#0f172a', fontWeight: 800 }}>
-              Quản lý Hợp đồng & Đặt cọc
+              Quản lý hợp đồng thuê phòng
             </h1>
             <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>
-              Theo dõi tiến độ thuê phòng, hợp đồng điện tử và trạng thái đặt cọc minh bạch.
+              Yêu cầu thuê → Chấp nhận → Thanh toán cọc → Tạo hợp đồng → Hai bên ký → Có hiệu lực.
             </p>
           </div>
 
@@ -175,8 +254,16 @@ export default function ContractsPage() {
           </Link>
         </div>
 
+        <p style={{ fontSize: 12, color: '#64748b' }}></p>
+        {notice && <div role="status" style={{ padding: 14, background: '#ecfdf5', color: '#065f46', borderRadius: 10, marginBottom: 16 }}>{notice}</div>}
         {/* Tabs: Tenant vs Landlord */}
         <div className="contract-tabs">
+          {user?.role === 'ADMIN' && (
+            <button type="button" className={`contract-tab-btn ${activeTab === 'admin' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('admin'); setPage(0); }}>
+              <ShieldCheck size={17} /> Toàn bộ hợp đồng
+            </button>
+          )}
           <button
             type="button"
             className={`contract-tab-btn ${activeTab === 'tenant' ? 'active' : ''}`}
@@ -218,15 +305,18 @@ export default function ContractsPage() {
           {[
             { key: 'ALL', label: 'Tất cả' },
             { key: 'PENDING', label: 'Chờ duyệt' },
+            { key: 'AWAITING_DEPOSIT', label: 'Chờ cọc' },
+            { key: 'AWAITING_SIGNATURES', label: 'Chờ ký' },
             { key: 'ACTIVE', label: 'Đang hiệu lực' },
+            { key: 'EXPIRED', label: 'Đã hết hạn' },
             { key: 'REJECTED', label: 'Bị từ chối' },
-            { key: 'TERMINATED', label: 'Đã thanh lý' },
+            { key: 'TERMINATED', label: 'Đã chấm dứt' },
             { key: 'CANCELLED', label: 'Đã hủy' },
           ].map((item) => (
             <button
               key={item.key}
               type="button"
-              onClick={() => setSelectedStatus(item.key)}
+              onClick={() => { setSelectedStatus(item.key as ContractStatus | 'ALL'); setPage(0); }}
               style={{
                 padding: '6px 12px',
                 borderRadius: '9999px',
@@ -365,6 +455,9 @@ export default function ContractsPage() {
                       )}
 
                       {/* Đối tác (Landlord hoặc Tenant) */}
+                      {activeTab === 'admin' && (
+                        <p>Chủ nhà: <strong>{contract.landlordName || contract.landlord?.fullName}</strong></p>
+                      )}
                       <div className="contract-parties">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <span style={{ color: '#64748b' }}>{otherPartyRole}:</span>
@@ -409,7 +502,7 @@ export default function ContractsPage() {
                           <strong>{contract.monthlyRent?.toLocaleString('vi-VN')} đ/tháng</strong>
                         </div>
                         <div className="price-row">
-                          <span>Tiền đặt cọc:</span>
+                          <span>Tiền cọc thỏa thuận:</span>
                           <strong>{contract.depositAmount?.toLocaleString('vi-VN')} đ</strong>
                         </div>
                         <div className="price-row">
@@ -420,10 +513,28 @@ export default function ContractsPage() {
                     </div>
                   </div>
 
+                  <div style={{ padding: '12px 20px', background: '#f8fafc', fontSize: '13px' }}>
+                    {contract.requestCode && <p>Mã yêu cầu: {contract.requestCode}</p>}
+                    {contract.status === 'AWAITING_DEPOSIT' && contract.depositDeadline && <p>Hạn thanh toán cọc: {new Date(contract.depositDeadline).toLocaleString('vi-VN')}. Hết hạn sẽ giải phóng phòng.</p>}
+                    {contract.depositPaidAt && <p>Đã xác nhận thanh toán: {new Date(contract.depositPaidAt).toLocaleString('vi-VN')} · {contract.paymentReference}</p>}
+                    {contract.formalizedAt && <p>Hợp đồng được tạo: {new Date(contract.formalizedAt).toLocaleString('vi-VN')}</p>}
+                    {contract.documentContent && <p>Người thuê: {contract.tenantSignedAt ? 'Đã ký giả lập' : 'Chưa ký'} · Chủ phòng: {contract.landlordSignedAt ? 'Đã ký giả lập' : 'Chưa ký'}</p>}
+                    {contract.closureRequests?.some(r => r.status === 'PENDING') && <p style={{ color: '#b45309', fontWeight: 600 }}>Có yêu cầu hủy / chấm dứt đang chờ bên còn lại xác nhận. Xem chi tiết để phản hồi.</p>}
+                    {contract.agreedEndDate && <p>Ngày chấm dứt đã thống nhất: <strong>{new Date(contract.agreedEndDate).toLocaleDateString('vi-VN')}</strong>{contract.status === 'ACTIVE' ? ' · Hợp đồng vẫn đang có hiệu lực.' : ''}</p>}
+                    {contract.activatedAt && <p>Có hiệu lực từ: {new Date(contract.activatedAt).toLocaleString('vi-VN')}</p>}
+                  </div>
                   {/* Actions Bar */}
                   <div className="contract-actions">
+                    {contract.status === 'AWAITING_DEPOSIT' && user?.id === contract.tenantId && (
+                      <button className="btn btn-primary" disabled={isProcessingAction || Boolean(contract.depositDeadline && new Date(contract.depositDeadline).getTime() <= now)}
+                        onClick={() => handleSimulation(contract, 'deposit')}>Thanh toán cọc qua VNPAY</button>
+                    )}
+                    {(
+                      <button className="btn btn-outline" disabled={isProcessingAction}
+                        onClick={() => { setDocumentTarget(contract); setAcceptedDocument(false); }}>Xem chi tiết hợp đồng</button>
+                    )}
                     {/* Đối với Chủ nhà khi có yêu cầu PENDING */}
-                    {activeTab === 'landlord' && contract.status === 'PENDING' && (
+                    {(activeTab === 'landlord' || activeTab === 'admin') && contract.status === 'PENDING' && (
                       <>
                         <button
                           type="button"
@@ -443,13 +554,13 @@ export default function ContractsPage() {
                           disabled={isProcessingAction}
                         >
                           <CheckCircle2 size={15} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
-                          Phê duyệt hợp đồng
+                          Chấp nhận & mở đặt cọc
                         </button>
                       </>
                     )}
 
                     {/* Đối với Người thuê khi đơn còn PENDING */}
-                    {activeTab === 'tenant' && contract.status === 'PENDING' && (
+                    {activeTab === 'tenant' && !contract.depositPaidAt && (contract.status === 'PENDING' || contract.status === 'AWAITING_DEPOSIT') && (
                       <button
                         type="button"
                         className="btn btn-outline"
@@ -463,16 +574,16 @@ export default function ContractsPage() {
                     )}
 
                     {/* Đối với Hợp đồng đang ACTIVE: Cho phép thanh lý / chấm dứt */}
-                    {contract.status === 'ACTIVE' && (
+                    {(contract.status === 'ACTIVE' || (contract.status === 'AWAITING_SIGNATURES' && contract.depositPaidAt)) && (user?.id === contract.tenantId || user?.id === contract.landlordId) && (
                       <button
                         type="button"
                         className="btn btn-outline"
                         style={{ fontSize: '13px', padding: '6px 14px' }}
-                        onClick={() => handleOpenActionModal(contract, 'TERMINATED', 'Chấm dứt / Thanh lý hợp đồng')}
+                        onClick={() => { setDocumentTarget(contract); setAcceptedDocument(false); }}
                         disabled={isProcessingAction}
                       >
                         <AlertTriangle size={15} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
-                        Thanh lý hợp đồng
+                        {contract.closureRequests?.some(r => r.status === 'PENDING' || r.status === 'ACCEPTED') ? 'Xem yêu cầu hủy / chấm dứt' : contract.status === 'ACTIVE' ? 'Yêu cầu chấm dứt hợp đồng' : 'Yêu cầu hủy sau đặt cọc'}
                       </button>
                     )}
                   </div>
@@ -507,16 +618,24 @@ export default function ContractsPage() {
           </div>
         )}
 
+        {documentTarget && (
+          <ContractDetailDialog contract={documentTarget} userId={user?.id}
+            onBusy={setIsProcessingAction} onUpdated={applyUpdate}
+            busy={isProcessingAction} accepted={acceptedDocument} onAccept={setAcceptedDocument}
+            onClose={() => { setDocumentTarget(null); setAcceptedDocument(false); }}
+            onSign={() => handleSimulation(documentTarget, 'signature')}
+            statusBadge={renderStatusBadge(documentTarget.status)} />
+        )}
         {/* Modal nhập lý do Từ chối / Hủy / Thanh lý */}
         {actionTarget && (
-          <div className="modal-backdrop" onClick={() => setActionTarget(null)}>
+          <div className="modal-backdrop" onClick={() => { if (!isProcessingAction) setActionTarget(null); }}>
             <div className="modal-container" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
                 <h3>{actionTarget.title}</h3>
                 <button
                   type="button"
                   className="modal-close-btn"
-                  onClick={() => setActionTarget(null)}
+                  onClick={() => { if (!isProcessingAction) setActionTarget(null); }}
                 >
                   ✕
                 </button>
@@ -555,7 +674,7 @@ export default function ContractsPage() {
                   <button
                     type="button"
                     className="btn btn-outline"
-                    onClick={() => setActionTarget(null)}
+                    onClick={() => { if (!isProcessingAction) setActionTarget(null); }}
                     disabled={isProcessingAction}
                   >
                     Đóng

@@ -12,7 +12,7 @@ spring:
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:phongtro_db}
     username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
+    password: ${DB_PASSWORD:Yao}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -58,9 +58,18 @@ app:
     base-url: ${AI_SERVICE_BASE_URL:http://localhost:8000}
     timeout-seconds: ${AI_SERVICE_TIMEOUT_SECONDS:5}
   fpt-ai:
-    api-key: ${FPT_AI_API_KEY:J9Zmq8YOudk0xlInGXQ2N8UF7RYTbviw}
+    api-key: ${FPT_AI_API_KEY:qYug2VN26OIgTKtTYgc5snwVtOUMn3rB}
     ocr-url: ${FPT_AI_OCR_URL:https://api.fpt.ai/vision/idr/vnm}
-    facematch-url: ${FPT_AI_FACEMATCH_URL:https://api.fpt.ai/vision/ekyc/facematch/v4}
-    confidence-threshold: ${FPT_AI_CONFIDENCE_THRESHOLD:85.0}
+    facematch-url: ${FPT_AI_FACEMATCH_URL:https://api.fpt.ai/dmp/checkface/v1}
+    confidence-threshold: ${FPT_AI_CONFIDENCE_THRESHOLD:80.0}
     mock-enabled: ${FPT_AI_MOCK_ENABLED:false}
 
+
+  vnpay:
+    tmn-code: ${VNPAY_TMN_CODE:3IINFGVH}
+    hash-secret: ${VNPAY_HASH_SECRET:}
+    pay-url: ${VNPAY_PAY_URL:https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}
+    return-url: ${VNPAY_RETURN_URL:http://localhost:5173/payment/vnpay-return}
+    ipn-url: ${VNPAY_IPN_URL:}
+    query-url: ${VNPAY_QUERY_URL:https://sandbox.vnpayment.vn/merchant_webapi/api/transaction}
+    query-ip: ${VNPAY_QUERY_IP:127.0.0.1}
