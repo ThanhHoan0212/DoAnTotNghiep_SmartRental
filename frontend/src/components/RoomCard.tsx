@@ -95,6 +95,10 @@ export default function RoomCard({ room, initialFavorited = false, onFavoriteTog
       </div>
 
       <div className="room-card-body">
+        {['APPROVED', 'RESERVED', 'RENTED'].includes(room.status) && <span
+          className={`room-availability room-availability-${room.status.toLowerCase()}`}>
+          {room.status === 'RESERVED' ? 'Đang giữ chỗ' : room.status === 'RENTED' ? 'Đã cho thuê' : 'Còn trống'}
+        </span>}
         <Link to={`/rooms/${room.id}`} className="room-title">
           {room.title}
         </Link>

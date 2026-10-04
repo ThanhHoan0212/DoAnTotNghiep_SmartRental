@@ -18,6 +18,14 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(org.springframework.dao.OptimisticLockingFailureException.class)
+    public ResponseEntity<ApiResponse<Object>> handleConcurrentUpdate(Exception ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.builder()
+                .success(false)
+                .message("Hợp đồng vừa được cập nhật bởi thao tác khác. Vui lòng tải lại và thử lại.")
+                .build());
+    }
+
     @ExceptionHandler(AppException.class)
     public ResponseEntity<ApiResponse<Object>> handleAppException(AppException ex) {
         log.warn("AppException occurred: [{}] {}", ex.getErrorCode().getCode(), ex.getMessage());

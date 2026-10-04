@@ -18,6 +18,21 @@ import java.util.UUID;
 @Schema(description = "Thông tin chi tiết hợp đồng thuê phòng")
 public class ContractResponse {
 
+    private java.util.List<com.phongtro.backend.entity.ContractClosure> closureRequests;
+    private LocalDate agreedEndDate;
+    private Instant terminatedAt;
+    private String requestCode;
+    private java.time.Instant depositDeadline;
+    private java.time.Instant depositPaidAt;
+    private String paymentReference;
+    private java.time.Instant formalizedAt;
+    private java.time.Instant tenantSignedAt;
+    private java.time.Instant landlordSignedAt;
+    private java.time.Instant activatedAt;
+
+    private String documentContent;
+
+
     @Schema(description = "ID hợp đồng")
     private UUID id;
 
@@ -79,7 +94,7 @@ public class ContractResponse {
     @Schema(description = "Tiền đặt cọc (VNĐ)", example = "3500000")
     private Double depositAmount;
 
-    @Schema(description = "Trạng thái hợp đồng: PENDING, ACTIVE, REJECTED, EXPIRED, TERMINATED, CANCELLED")
+    @Schema(description = "Trạng thái hợp đồng: PENDING, AWAITING_DEPOSIT, AWAITING_SIGNATURES, ACTIVE, REJECTED, EXPIRED, TERMINATED, CANCELLED")
     private ContractStatus status;
 
     @Schema(description = "Điều khoản / Thỏa thuận / Lời nhắn")

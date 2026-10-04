@@ -99,10 +99,38 @@ public class ContractController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    @PostMapping("/{id}/simulate-deposit")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Giả lập người thuê thanh toán cọc, không thu tiền thật")
+    public ResponseEntity<ApiResponse<ContractResponse>> simulateDeposit(Authentication authentication, @PathVariable UUID id) {
+        throw new com.phongtro.backend.exception.AppException(com.phongtro.backend.exception.ErrorCode.OPERATION_NOT_ALLOWED, "Thanh toán giả lập đã tắt. Vui lòng thanh toán qua VNPAY.");
+    }
+
+    @PostMapping("/{id}/simulate-signature")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Giả lập chữ ký của tài khoản hiện tại, không phải chữ ký số thật")
+    public ResponseEntity<ApiResponse<ContractResponse>> simulateSignature(Authentication authentication, @PathVariable UUID id) {
+        return ResponseEntity.ok(ApiResponse.success(contractService.simulateSignature(id, authentication.getName())));
+    }
+
+    @PostMapping("/{id}/closure-requests")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<ContractResponse>> requestClosure(Authentication authentication, @PathVariable UUID id,
+            @Valid @RequestBody com.phongtro.backend.dto.request.CreateClosureRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(contractService.requestClosure(id, request, authentication.getName())));
+    }
+
+    @PostMapping("/{id}/closure-requests/{requestId}/response")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<ContractResponse>> respondClosure(Authentication authentication, @PathVariable UUID id,
+            @PathVariable UUID requestId, @Valid @RequestBody com.phongtro.backend.dto.request.RespondClosureRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(contractService.respondClosure(id, requestId, request, authentication.getName())));
+    }
+
     @PatchMapping("/{id}/status")
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Cập nhật trạng thái hợp đồng (Duyệt, từ chối, hủy, thanh lý)",
-            description = "Chủ nhà có thể duyệt (ACTIVE) hoặc từ chối (REJECTED); Người thuê có thể hủy (CANCELLED); Cả 2 bên có thể thanh lý (TERMINATED).")
+            description = "Chủ nhà có thể chấp nhận và mở cọc (AWAITING_DEPOSIT) hoặc từ chối (REJECTED); Người thuê có thể hủy (CANCELLED); Chấm dứt trước hạn phải qua yêu cầu riêng được bên còn lại xác nhận.")
     public ResponseEntity<ApiResponse<ContractResponse>> updateContractStatus(
             Authentication authentication,
             @PathVariable UUID id,

@@ -122,7 +122,7 @@ export default function RoomDetailPage() {
 
   const fullAddress = `${room.address}${room.ward ? `, ${room.ward}` : ""}, ${room.district}, ${room.city}`;
   const isOwner = user?.id === room.landlord?.id;
-  const isRented = room.status === "RENTED";
+  const isRented = room.status === "RENTED" || room.status === "RESERVED";
 
   return (
     <main className="page">
@@ -151,7 +151,7 @@ export default function RoomDetailPage() {
               <CheckCircle size={24} color="#10b981" />
               <div>
                 <strong style={{ color: '#065f46', fontSize: '15px' }}>
-                  Gửi yêu cầu thuê phòng thành công! (Mã HĐ: {createdContract.contractCode || createdContract.contractNumber || createdContract.id?.slice(0, 8)})
+                  Gửi yêu cầu thuê phòng thành công! (Mã yêu cầu: {createdContract.contractCode || createdContract.contractNumber || createdContract.id?.slice(0, 8)})
                 </strong>
                 <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#047857' }}>
                   Chủ nhà sẽ nhận được thông báo để xét duyệt yêu cầu của bạn. Bạn có thể theo dõi tiến độ trong mục Quản lý hợp đồng.
@@ -187,7 +187,7 @@ export default function RoomDetailPage() {
                 boxShadow: '0 4px 6px rgba(0,0,0,0.2)',
               }}
             >
-              ĐÃ CÓ NGƯỜI THUÊ
+              {room.status === "RESERVED" ? "ĐANG GIỮ CHỖ" : "ĐÃ CÓ NGƯỜI THUÊ"}
             </div>
           )}
         </div>
@@ -222,7 +222,7 @@ export default function RoomDetailPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px', flexWrap: 'wrap' }}>
               {isRented ? (
                 <span className="status-badge status-terminated">
-                  ● Đã cho thuê
+                  {room.status === "RESERVED" ? "● Đang giữ chỗ" : "● Đã cho thuê"}
                 </span>
               ) : (
                 <span className="verified-badge" style={{ background: '#dcfce7', color: '#166534', padding: '4px 10px', borderRadius: '12px', fontSize: '13px', fontWeight: 600 }}>
@@ -344,7 +344,7 @@ export default function RoomDetailPage() {
                 }}
               >
                 <FileText size={18} />
-                Phòng đã có người thuê
+                {room.status === "RESERVED" ? "Phòng đang được giữ chỗ" : "Phòng đã có người thuê"}
               </button>
             ) : (
               <button

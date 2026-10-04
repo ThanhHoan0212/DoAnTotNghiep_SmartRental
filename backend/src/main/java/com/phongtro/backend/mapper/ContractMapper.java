@@ -22,6 +22,18 @@ public class ContractMapper {
 
         return ContractResponse.builder()
                 .id(contract.getId())
+                .closureRequests(new java.util.ArrayList<>(contract.getClosureRequests()))
+                .agreedEndDate(contract.getAgreedEndDate())
+                .terminatedAt(contract.getTerminatedAt())
+                .requestCode(contract.getRequestCode())
+                .depositDeadline(contract.getDepositDeadline())
+                .depositPaidAt(contract.getDepositPaidAt())
+                .paymentReference(contract.getPaymentReference())
+                .formalizedAt(contract.getFormalizedAt())
+                .tenantSignedAt(contract.getTenantSignedAt())
+                .landlordSignedAt(contract.getLandlordSignedAt())
+                .activatedAt(contract.getActivatedAt())
+                .documentContent(contract.getDocumentContent())
                 .contractCode(contract.getContractCode())
                 // Room info
                 .roomId(contract.getRoom() != null ? contract.getRoom().getId() : null)

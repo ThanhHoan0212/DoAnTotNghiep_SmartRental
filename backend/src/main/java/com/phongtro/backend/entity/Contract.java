@@ -15,6 +15,32 @@ import java.util.UUID;
 @AllArgsConstructor
 public class Contract extends BaseEntity {
 
+    @ElementCollection
+    @CollectionTable(name = "contract_closure_requests", joinColumns = @JoinColumn(name = "contract_id"))
+    @OrderColumn(name = "request_order")
+    @Builder.Default
+    private java.util.List<ContractClosure> closureRequests = new java.util.ArrayList<>();
+
+    private LocalDate agreedEndDate;
+    private java.time.Instant terminatedAt;
+
+    private String requestCode;
+    private java.time.Instant depositDeadline;
+    private java.time.Instant depositPaidAt;
+    private String paymentReference;
+    private java.time.Instant formalizedAt;
+    private java.time.Instant tenantSignedAt;
+    private java.time.Instant landlordSignedAt;
+    private java.time.Instant activatedAt;
+
+    @Column(columnDefinition = "TEXT")
+    private String documentContent;
+
+
+    @Version
+    @Column(nullable = false)
+    private long version;
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", updatable = false, nullable = false)

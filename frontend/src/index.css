@@ -1310,4 +1310,8 @@ button {
   padding-top: 14px;
   border-top: 1px solid #f1f5f9;
 }
-
+
+.room-availability { display: inline-flex; align-items: center; padding: 4px 10px; margin-bottom: 10px; border-radius: 999px; font-size: 12px; font-weight: 600; line-height: 1.5; }
+.room-availability-approved { background: #ecfdf5; color: #065f46; }
+.room-availability-reserved { background: #fffbeb; color: #92400e; }
+.room-availability-rented { background: #f1f5f9; color: #475569; }

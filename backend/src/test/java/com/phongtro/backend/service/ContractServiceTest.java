@@ -2,6 +2,8 @@ package com.phongtro.backend.service;
 
 import com.phongtro.backend.common.PageResponse;
 import com.phongtro.backend.dto.request.CreateContractRequest;
+import com.phongtro.backend.dto.request.CreateClosureRequest;
+import com.phongtro.backend.dto.request.RespondClosureRequest;
 import com.phongtro.backend.dto.request.UpdateContractStatusRequest;
 import com.phongtro.backend.dto.response.ContractResponse;
 import com.phongtro.backend.entity.*;
@@ -144,7 +146,7 @@ class ContractServiceTest {
                 .build();
 
         when(userRepository.findByEmail(sampleTenant.getEmail())).thenReturn(Optional.of(sampleTenant));
-        when(roomRepository.findById(roomId)).thenReturn(Optional.of(sampleRoom));
+        when(roomRepository.findByIdForUpdate(roomId)).thenReturn(Optional.of(sampleRoom));
         when(contractRepository.existsByTenantAndRoomAndStatusIn(eq(sampleTenant), eq(sampleRoom), any())).thenReturn(false);
         when(contractRepository.existsByRoomAndStatus(sampleRoom, ContractStatus.ACTIVE)).thenReturn(false);
         when(contractRepository.save(any(Contract.class))).thenReturn(sampleContract);
@@ -174,7 +176,7 @@ class ContractServiceTest {
                 contractService.createContractRequest(request, sampleTenant.getEmail()));
 
         assertEquals(ErrorCode.EKYC_REQUIRED, ex.getErrorCode());
-        verify(roomRepository, never()).findById(any());
+        verify(roomRepository, never()).findByIdForUpdate(any());
         verify(contractRepository, never()).save(any());
     }
 
@@ -190,7 +192,7 @@ class ContractServiceTest {
                 .build();
 
         when(userRepository.findByEmail(sampleTenant.getEmail())).thenReturn(Optional.of(sampleTenant));
-        when(roomRepository.findById(roomId)).thenReturn(Optional.of(sampleRoom));
+        when(roomRepository.findByIdForUpdate(roomId)).thenReturn(Optional.of(sampleRoom));
 
         AppException ex = assertThrows(AppException.class, () ->
                 contractService.createContractRequest(request, sampleTenant.getEmail()));
@@ -209,7 +211,7 @@ class ContractServiceTest {
                 .build();
 
         when(userRepository.findByEmail(sampleLandlord.getEmail())).thenReturn(Optional.of(sampleLandlord));
-        when(roomRepository.findById(roomId)).thenReturn(Optional.of(sampleRoom));
+        when(roomRepository.findByIdForUpdate(roomId)).thenReturn(Optional.of(sampleRoom));
 
         AppException ex = assertThrows(AppException.class, () ->
                 contractService.createContractRequest(request, sampleLandlord.getEmail()));
@@ -228,7 +230,7 @@ class ContractServiceTest {
                 .build();
 
         when(userRepository.findByEmail(sampleTenant.getEmail())).thenReturn(Optional.of(sampleTenant));
-        when(roomRepository.findById(roomId)).thenReturn(Optional.of(sampleRoom));
+        when(roomRepository.findByIdForUpdate(roomId)).thenReturn(Optional.of(sampleRoom));
 
         AppException ex = assertThrows(AppException.class, () ->
                 contractService.createContractRequest(request, sampleTenant.getEmail()));
@@ -265,7 +267,7 @@ class ContractServiceTest {
     @DisplayName("Chủ nhà phê duyệt hợp đồng: Trạng thái chuyển ACTIVE và phòng chuyển RENTED kèm tự động hủy yêu cầu chờ khác")
     void updateContractStatus_WhenLandlordApprovesPending_ShouldSetStatusActiveAndRoomRented() {
         UpdateContractStatusRequest request = UpdateContractStatusRequest.builder()
-                .status(ContractStatus.ACTIVE)
+                .status(ContractStatus.AWAITING_DEPOSIT)
                 .build();
 
         when(contractRepository.findById(contractId)).thenReturn(Optional.of(sampleContract));
@@ -276,14 +278,14 @@ class ContractServiceTest {
                 .thenReturn(List.of());
         when(contractRepository.save(sampleContract)).thenReturn(sampleContract);
 
-        sampleContractResponse.setStatus(ContractStatus.ACTIVE);
+        sampleContractResponse.setStatus(ContractStatus.AWAITING_DEPOSIT);
         when(contractMapper.toContractResponse(sampleContract)).thenReturn(sampleContractResponse);
 
         ContractResponse response = contractService.updateContractStatus(contractId, request, sampleLandlord.getEmail());
 
         assertNotNull(response);
-        assertEquals(ContractStatus.ACTIVE, sampleContract.getStatus());
-        assertEquals(RoomStatus.RENTED, sampleRoom.getStatus());
+        assertEquals(ContractStatus.AWAITING_DEPOSIT, sampleContract.getStatus());
+        assertEquals(RoomStatus.RESERVED, sampleRoom.getStatus());
         verify(roomRepository, times(1)).findByIdForUpdate(roomId);
         verify(roomRepository, times(1)).save(sampleRoom);
         verify(contractRepository, times(1)).save(sampleContract);
@@ -293,7 +295,7 @@ class ContractServiceTest {
     @DisplayName("Xử lý bất đồng bộ (Race Condition): Chặn duyệt hợp đồng khi phòng đã có người thuê trước đó")
     void updateContractStatus_WhenRoomAlreadyRentedByConcurrentThread_ShouldThrowException() {
         UpdateContractStatusRequest request = UpdateContractStatusRequest.builder()
-                .status(ContractStatus.ACTIVE)
+                .status(ContractStatus.AWAITING_DEPOSIT)
                 .build();
 
         // Giả lập phòng đã bị một luồng khác duyệt chuyển sang RENTED trước đó
@@ -355,29 +357,412 @@ class ContractServiceTest {
     }
 
     @Test
-    @DisplayName("Thanh lý hợp đồng ACTIVE: Trạng thái chuyển TERMINATED và phòng hoàn lại APPROVED")
-    void updateContractStatus_WhenTerminated_ShouldRevertRoomToApproved() {
+    void directTerminationIsForbiddenEvenForLandlord() {
         sampleContract.setStatus(ContractStatus.ACTIVE);
         sampleRoom.setStatus(RoomStatus.RENTED);
-
-        UpdateContractStatusRequest request = UpdateContractStatusRequest.builder()
-                .status(ContractStatus.TERMINATED)
-                .reason("Hết hạn hợp đồng và trả phòng")
-                .build();
-
         when(contractRepository.findById(contractId)).thenReturn(Optional.of(sampleContract));
         when(userRepository.findByEmail(sampleLandlord.getEmail())).thenReturn(Optional.of(sampleLandlord));
-        when(contractRepository.existsByRoomAndStatus(sampleRoom, ContractStatus.ACTIVE)).thenReturn(false);
+        assertThrows(AppException.class, () -> contractService.updateContractStatus(contractId,
+                UpdateContractStatusRequest.builder().status(ContractStatus.TERMINATED).reason("Move out").build(), sampleLandlord.getEmail()));
+        assertEquals(ContractStatus.ACTIVE, sampleContract.getStatus());
+        verify(roomRepository, never()).save(any());
+    }
+
+    @Test
+    void approveHiddenRoomIsRejected() {
+        sampleRoom.setStatus(RoomStatus.HIDDEN);
+        when(contractRepository.findById(contractId)).thenReturn(Optional.of(sampleContract));
+        when(userRepository.findByEmail(sampleLandlord.getEmail())).thenReturn(Optional.of(sampleLandlord));
+        when(roomRepository.findByIdForUpdate(roomId)).thenReturn(Optional.of(sampleRoom));
+        assertThrows(AppException.class, () -> contractService.updateContractStatus(contractId,
+                UpdateContractStatusRequest.builder().status(ContractStatus.AWAITING_DEPOSIT).build(), sampleLandlord.getEmail()));
+        verify(contractRepository, never()).save(any());
+    }
+
+    @Test
+    void approvePastStartDateIsRejected() {
+        sampleContract.setStartDate(LocalDate.now().minusDays(1));
+        when(contractRepository.findById(contractId)).thenReturn(Optional.of(sampleContract));
+        when(userRepository.findByEmail(sampleLandlord.getEmail())).thenReturn(Optional.of(sampleLandlord));
+        assertThrows(AppException.class, () -> contractService.updateContractStatus(contractId,
+                UpdateContractStatusRequest.builder().status(ContractStatus.AWAITING_DEPOSIT).build(), sampleLandlord.getEmail()));
+        verify(roomRepository, never()).save(any());
+    }
+
+    @Test
+    void zeroDepositIsPreserved() {
+        when(userRepository.findByEmail(sampleTenant.getEmail())).thenReturn(Optional.of(sampleTenant));
+        when(roomRepository.findByIdForUpdate(roomId)).thenReturn(Optional.of(sampleRoom));
+        when(contractRepository.save(any(Contract.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        contractService.createContractRequest(CreateContractRequest.builder().roomId(roomId)
+                .startDate(LocalDate.now()).endDate(LocalDate.now().plusMonths(1)).depositAmount(0.0).build(), sampleTenant.getEmail());
+        verify(contractRepository).save(argThat(c -> c.getDepositAmount() == 0.0));
+    }
+
+    @Test
+    void negativeDepositIsRejected() {
+        when(userRepository.findByEmail(sampleTenant.getEmail())).thenReturn(Optional.of(sampleTenant));
+        when(roomRepository.findByIdForUpdate(roomId)).thenReturn(Optional.of(sampleRoom));
+        assertThrows(AppException.class, () -> contractService.createContractRequest(CreateContractRequest.builder()
+                .roomId(roomId).startDate(LocalDate.now()).endDate(LocalDate.now().plusMonths(1))
+                .depositAmount(-1.0).build(), sampleTenant.getEmail()));
+        verify(contractRepository, never()).save(any());
+    }
+
+    @Test
+    void expiryReleasesRentedRoom() {
+        sampleContract.setStatus(ContractStatus.ACTIVE);
+        sampleContract.setEndDate(LocalDate.now().minusDays(1));
+        sampleRoom.setStatus(RoomStatus.RENTED);
+        when(contractRepository.findById(contractId)).thenReturn(Optional.of(sampleContract));
+        when(roomRepository.findByIdForUpdate(roomId)).thenReturn(Optional.of(sampleRoom));
+        contractService.expireContract(contractId);
+        assertEquals(ContractStatus.EXPIRED, sampleContract.getStatus());
+        assertEquals(RoomStatus.APPROVED, sampleRoom.getStatus());
+        verify(contractRepository).existsByRoomAndStatusAndIdNot(sampleRoom, ContractStatus.ACTIVE, contractId);
+    }
+
+    @Test
+    void expiryDoesNotEndAgreementOnItsLastDay() {
+        sampleContract.setStatus(ContractStatus.ACTIVE);
+        sampleContract.setEndDate(LocalDate.now());
+        when(contractRepository.findById(contractId)).thenReturn(Optional.of(sampleContract));
+        contractService.expireContract(contractId);
+        assertEquals(ContractStatus.ACTIVE, sampleContract.getStatus());
+        verify(roomRepository, never()).findByIdForUpdate(any());
+    }
+
+    @Test
+    void adminCannotExpirePendingOrFutureAgreement() {
+        sampleOtherUser.setRole(Role.ADMIN);
+        when(contractRepository.findById(contractId)).thenReturn(Optional.of(sampleContract));
+        when(userRepository.findByEmail(sampleOtherUser.getEmail())).thenReturn(Optional.of(sampleOtherUser));
+        var request = UpdateContractStatusRequest.builder().status(ContractStatus.EXPIRED).build();
+        assertThrows(AppException.class, () -> contractService.updateContractStatus(contractId, request, sampleOtherUser.getEmail()));
+        sampleContract.setStatus(ContractStatus.ACTIVE);
+        assertThrows(AppException.class, () -> contractService.updateContractStatus(contractId, request, sampleOtherUser.getEmail()));
+        verify(contractRepository, never()).save(any());
+    }
+
+    @Test
+    void scheduledTerminationDoesNotReopenHiddenRoom() {
+        prepareAcceptedClosure(LocalDate.now());
+        sampleRoom.setStatus(RoomStatus.HIDDEN);
+        when(roomRepository.findByIdForUpdate(roomId)).thenReturn(Optional.of(sampleRoom));
+        contractService.expireContract(contractId);
+        assertEquals(ContractStatus.TERMINATED, sampleContract.getStatus());
+        assertEquals(RoomStatus.HIDDEN, sampleRoom.getStatus());
+        verify(roomRepository, never()).save(any());
+    }
+
+    private void prepareSimulation(ContractStatus status, User actor) {
+        sampleContract.setStatus(status);
+        sampleRoom.setStatus(RoomStatus.RESERVED);
+        sampleContract.setDepositDeadline(java.time.Instant.now().plusSeconds(3600));
+        when(contractRepository.findById(contractId)).thenReturn(Optional.of(sampleContract));
+        when(userRepository.findByEmail(actor.getEmail())).thenReturn(Optional.of(actor));
+    }
+
+    @Test
+    void depositCreatesFormalContractButDoesNotActivate() {
+        prepareSimulation(ContractStatus.AWAITING_DEPOSIT, sampleTenant);
+        when(roomRepository.findByIdForUpdate(roomId)).thenReturn(Optional.of(sampleRoom));
         when(contractRepository.save(sampleContract)).thenReturn(sampleContract);
+        contractService.simulateDeposit(contractId, sampleTenant.getEmail());
+        assertEquals(ContractStatus.AWAITING_SIGNATURES, sampleContract.getStatus());
+        assertEquals(RoomStatus.RESERVED, sampleRoom.getStatus());
+        assertNotNull(sampleContract.getDepositPaidAt());
+        assertTrue(sampleContract.getPaymentReference().startsWith("SIM-PAY-"));
+        assertTrue(sampleContract.getDocumentContent().contains(sampleTenant.getFullName()));
+        assertNotNull(sampleContract.getFormalizedAt());
+        assertNull(sampleContract.getActivatedAt());
+        assertNull(sampleContract.getTenantSignedAt());
+    }
 
-        sampleContractResponse.setStatus(ContractStatus.TERMINATED);
-        when(contractMapper.toContractResponse(sampleContract)).thenReturn(sampleContractResponse);
+    @Test
+    void onlyTenantCanPayEvenWhenActorIsAdmin() {
+        sampleOtherUser.setRole(Role.ADMIN);
+        prepareSimulation(ContractStatus.AWAITING_DEPOSIT, sampleOtherUser);
+        assertThrows(AppException.class, () -> contractService.simulateDeposit(contractId, sampleOtherUser.getEmail()));
+        verify(contractRepository, never()).save(any());
+    }
 
-        ContractResponse response = contractService.updateContractStatus(contractId, request, sampleLandlord.getEmail());
+    @Test
+    void paymentBeforeApprovalIsRejected() {
+        prepareSimulation(ContractStatus.PENDING, sampleTenant);
+        assertThrows(AppException.class, () -> contractService.simulateDeposit(contractId, sampleTenant.getEmail()));
+    }
 
-        assertNotNull(response);
+    @Test
+    void paymentAfterDeadlineIsRejected() {
+        prepareSimulation(ContractStatus.AWAITING_DEPOSIT, sampleTenant);
+        sampleContract.setDepositDeadline(java.time.Instant.now().minusSeconds(1));
+        assertThrows(AppException.class, () -> contractService.simulateDeposit(contractId, sampleTenant.getEmail()));
+    }
+
+    @Test
+    void paymentRetryDoesNotCreateAnotherTransaction() {
+        prepareSimulation(ContractStatus.AWAITING_SIGNATURES, sampleTenant);
+        sampleContract.setDepositPaidAt(java.time.Instant.now());
+        sampleContract.setPaymentReference("SIM-PAY-existing");
+        contractService.simulateDeposit(contractId, sampleTenant.getEmail());
+        assertEquals("SIM-PAY-existing", sampleContract.getPaymentReference());
+        verify(contractRepository, never()).save(any());
+    }
+
+    @Test
+    void firstSignatureKeepsRoomReservedAndSecondActivates() {
+        prepareSimulation(ContractStatus.AWAITING_SIGNATURES, sampleTenant);
+        sampleContract.setDepositPaidAt(java.time.Instant.now());
+        sampleContract.setDocumentContent("Frozen agreement");
+        when(roomRepository.findByIdForUpdate(roomId)).thenReturn(Optional.of(sampleRoom));
+        when(contractRepository.save(sampleContract)).thenReturn(sampleContract);
+        contractService.simulateSignature(contractId, sampleTenant.getEmail());
+        assertNotNull(sampleContract.getTenantSignedAt());
+        assertNull(sampleContract.getLandlordSignedAt());
+        assertEquals(ContractStatus.AWAITING_SIGNATURES, sampleContract.getStatus());
+        assertEquals(RoomStatus.RESERVED, sampleRoom.getStatus());
+        when(userRepository.findByEmail(sampleLandlord.getEmail())).thenReturn(Optional.of(sampleLandlord));
+        contractService.simulateSignature(contractId, sampleLandlord.getEmail());
+        assertEquals(ContractStatus.ACTIVE, sampleContract.getStatus());
+        assertEquals(RoomStatus.RENTED, sampleRoom.getStatus());
+        assertNotNull(sampleContract.getActivatedAt());
+        assertEquals("Frozen agreement", sampleContract.getDocumentContent());
+    }
+
+    @Test
+    void landlordCanSignFirstAndDuplicateSigningDoesNotActivate() {
+        prepareSimulation(ContractStatus.AWAITING_SIGNATURES, sampleLandlord);
+        sampleContract.setDepositPaidAt(java.time.Instant.now());
+        sampleContract.setDocumentContent("Agreement");
+        when(roomRepository.findByIdForUpdate(roomId)).thenReturn(Optional.of(sampleRoom));
+        when(contractRepository.save(sampleContract)).thenReturn(sampleContract);
+        contractService.simulateSignature(contractId, sampleLandlord.getEmail());
+        var signedAt = sampleContract.getLandlordSignedAt();
+        contractService.simulateSignature(contractId, sampleLandlord.getEmail());
+        assertEquals(signedAt, sampleContract.getLandlordSignedAt());
+        assertEquals(ContractStatus.AWAITING_SIGNATURES, sampleContract.getStatus());
+        verify(contractRepository, times(1)).save(any());
+    }
+
+    @Test
+    void adminCannotSignForEitherParty() {
+        sampleOtherUser.setRole(Role.ADMIN);
+        prepareSimulation(ContractStatus.AWAITING_SIGNATURES, sampleOtherUser);
+        assertThrows(AppException.class, () -> contractService.simulateSignature(contractId, sampleOtherUser.getEmail()));
+    }
+
+    @Test
+    void signingBeforeDepositIsRejected() {
+        prepareSimulation(ContractStatus.AWAITING_DEPOSIT, sampleTenant);
+        assertThrows(AppException.class, () -> contractService.simulateSignature(contractId, sampleTenant.getEmail()));
+    }
+
+    @Test
+    void statusPatchCannotBypassPaymentAndSignatures() {
+        prepareSimulation(ContractStatus.PENDING, sampleLandlord);
+        assertThrows(AppException.class, () -> contractService.updateContractStatus(contractId,
+            UpdateContractStatusRequest.builder().status(ContractStatus.ACTIVE).build(), sampleLandlord.getEmail()));
+        verify(contractRepository, never()).save(any());
+    }
+
+    @Test
+    void depositTimeoutReleasesReservation() {
+        sampleContract.setStatus(ContractStatus.AWAITING_DEPOSIT);
+        sampleContract.setDepositDeadline(java.time.Instant.now().minusSeconds(1));
+        sampleRoom.setStatus(RoomStatus.RESERVED);
+        when(contractRepository.findById(contractId)).thenReturn(Optional.of(sampleContract));
+        when(roomRepository.findByIdForUpdate(roomId)).thenReturn(Optional.of(sampleRoom));
+        contractService.expireContract(contractId);
+        assertEquals(ContractStatus.EXPIRED, sampleContract.getStatus());
+        assertEquals(RoomStatus.APPROVED, sampleRoom.getStatus());
+    }
+
+    private CreateClosureRequest proposal(LocalDate endDate) {
+        return CreateClosureRequest.builder().reason("Dọn đi sớm").requestedEndDate(endDate)
+                .refundType(ContractClosure.Refund.PARTIAL).refundAmount(2000000.0)
+                .settlementNote("Hai bên thỏa thuận giữ lại một nửa tiền cọc").build();
+    }
+
+    private ContractClosure pendingClosure(ContractClosure.Kind kind, LocalDate endDate) {
+        return ContractClosure.builder().requestId(UUID.randomUUID()).kind(kind).status(ContractClosure.Status.PENDING)
+                .requestedBy(sampleTenant.getId()).reason("Dọn đi sớm").requestedEndDate(endDate)
+                .refundType(ContractClosure.Refund.PARTIAL).refundAmount(2000000.0)
+                .settlementNote("Giữ lại một nửa").requestedAt(java.time.Instant.now()).build();
+    }
+
+    private void prepareClosureActor(ContractStatus status, User actor) {
+        sampleContract.setStatus(status);
+        sampleContract.setStartDate(LocalDate.now().minusMonths(1));
+        sampleContract.setDepositPaidAt(java.time.Instant.now());
+        sampleRoom.setStatus(status == ContractStatus.ACTIVE ? RoomStatus.RENTED : RoomStatus.RESERVED);
+        when(contractRepository.findById(contractId)).thenReturn(Optional.of(sampleContract));
+        when(userRepository.findByEmail(actor.getEmail())).thenReturn(Optional.of(actor));
+    }
+
+    private void prepareAcceptedClosure(LocalDate date) {
+        sampleContract.setStatus(ContractStatus.ACTIVE);
+        sampleContract.setAgreedEndDate(date);
+        sampleRoom.setStatus(RoomStatus.RENTED);
+        ContractClosure closure = pendingClosure(ContractClosure.Kind.EARLY_TERMINATION, date);
+        closure.setStatus(ContractClosure.Status.ACCEPTED);
+        sampleContract.getClosureRequests().add(closure);
+        when(contractRepository.findById(contractId)).thenReturn(Optional.of(sampleContract));
+    }
+
+    @Test
+    void tenantCanCancelUnpaidReservationAndReleaseRoom() {
+        prepareSimulation(ContractStatus.AWAITING_DEPOSIT, sampleTenant);
+        when(roomRepository.findByIdForUpdate(roomId)).thenReturn(Optional.of(sampleRoom));
+        contractService.updateContractStatus(contractId, UpdateContractStatusRequest.builder()
+                .status(ContractStatus.CANCELLED).reason("Không thuê nữa").build(), sampleTenant.getEmail());
+        assertEquals(ContractStatus.CANCELLED, sampleContract.getStatus());
+        assertEquals(RoomStatus.APPROVED, sampleRoom.getStatus());
+    }
+
+    @Test
+    void paidCancellationMustWaitForOtherPartyAndBlocksSigning() {
+        prepareClosureActor(ContractStatus.AWAITING_SIGNATURES, sampleTenant);
+        contractService.requestClosure(contractId, proposal(null), sampleTenant.getEmail());
+        assertEquals(ContractStatus.AWAITING_SIGNATURES, sampleContract.getStatus());
+        assertEquals(RoomStatus.RESERVED, sampleRoom.getStatus());
+        assertEquals(ContractClosure.Kind.CANCELLATION, sampleContract.getClosureRequests().get(0).getKind());
+        assertThrows(AppException.class, () -> contractService.simulateSignature(contractId, sampleTenant.getEmail()));
+        assertThrows(AppException.class, () -> contractService.updateContractStatus(contractId,
+                UpdateContractStatusRequest.builder().status(ContractStatus.CANCELLED).reason("Cancel").build(), sampleTenant.getEmail()));
+        verify(roomRepository, never()).save(any());
+    }
+
+    @Test
+    void agreedPaidCancellationReleasesRoomAndPreservesSettlement() {
+        prepareClosureActor(ContractStatus.AWAITING_SIGNATURES, sampleLandlord);
+        ContractClosure closure = pendingClosure(ContractClosure.Kind.CANCELLATION, null);
+        sampleContract.getClosureRequests().add(closure);
+        when(roomRepository.findByIdForUpdate(roomId)).thenReturn(Optional.of(sampleRoom));
+        contractService.respondClosure(contractId, closure.getRequestId(), RespondClosureRequest.builder().accepted(true).build(), sampleLandlord.getEmail());
+        assertEquals(ContractStatus.CANCELLED, sampleContract.getStatus());
+        assertEquals(RoomStatus.APPROVED, sampleRoom.getStatus());
+        assertEquals(ContractClosure.Status.COMPLETED, closure.getStatus());
+        assertEquals(2000000.0, closure.getRefundAmount());
+        assertEquals(sampleLandlord.getId(), closure.getRespondedBy());
+        assertNotNull(sampleContract.getDepositPaidAt());
+    }
+
+    @Test
+    void approvedFutureTerminationKeepsContractAndRoomActive() {
+        prepareClosureActor(ContractStatus.ACTIVE, sampleLandlord);
+        var closure = pendingClosure(ContractClosure.Kind.EARLY_TERMINATION, LocalDate.now().plusDays(7));
+        sampleContract.getClosureRequests().add(closure);
+        contractService.respondClosure(contractId, closure.getRequestId(), RespondClosureRequest.builder().accepted(true).build(), sampleLandlord.getEmail());
+        assertEquals(ContractStatus.ACTIVE, sampleContract.getStatus());
+        assertEquals(RoomStatus.RENTED, sampleRoom.getStatus());
+        assertEquals(closure.getRequestedEndDate(), sampleContract.getAgreedEndDate());
+        assertEquals(ContractClosure.Status.ACCEPTED, closure.getStatus());
+        assertNull(closure.getCompletedAt());
+        verify(roomRepository, never()).save(any());
+    }
+
+    @Test
+    void rejectionKeepsAgreementAndAllowsNewProposalWithoutLosingHistory() {
+        prepareClosureActor(ContractStatus.ACTIVE, sampleLandlord);
+        var closure = pendingClosure(ContractClosure.Kind.EARLY_TERMINATION, LocalDate.now().plusDays(7));
+        sampleContract.getClosureRequests().add(closure);
+        contractService.respondClosure(contractId, closure.getRequestId(), RespondClosureRequest.builder().accepted(false).reason("Chưa thống nhất cọc").build(), sampleLandlord.getEmail());
+        assertEquals(ContractClosure.Status.REJECTED, closure.getStatus());
+        assertNull(sampleContract.getAgreedEndDate());
+        assertEquals(ContractStatus.ACTIVE, sampleContract.getStatus());
+        contractService.requestClosure(contractId, proposal(LocalDate.now().plusDays(8)), sampleLandlord.getEmail());
+        assertEquals(2, sampleContract.getClosureRequests().size());
+        verify(roomRepository, never()).save(any());
+    }
+
+    @Test
+    void senderCannotApproveOwnRequest() {
+        prepareClosureActor(ContractStatus.ACTIVE, sampleTenant);
+        var closure = pendingClosure(ContractClosure.Kind.EARLY_TERMINATION, LocalDate.now().plusDays(7));
+        sampleContract.getClosureRequests().add(closure);
+        assertThrows(AppException.class, () -> contractService.respondClosure(contractId, closure.getRequestId(),
+                RespondClosureRequest.builder().accepted(true).build(), sampleTenant.getEmail()));
+        verify(contractRepository, never()).save(any());
+    }
+
+    @Test
+    void unrelatedAdminCannotRequestOrApproveClosure() {
+        sampleOtherUser.setRole(Role.ADMIN);
+        prepareClosureActor(ContractStatus.ACTIVE, sampleOtherUser);
+        assertThrows(AppException.class, () -> contractService.requestClosure(contractId, proposal(LocalDate.now().plusDays(1)), sampleOtherUser.getEmail()));
+        assertThrows(AppException.class, () -> contractService.respondClosure(contractId, UUID.randomUUID(),
+                RespondClosureRequest.builder().accepted(true).build(), sampleOtherUser.getEmail()));
+    }
+
+    @Test
+    void invalidDatesAndRefundsAreRejected() {
+        prepareClosureActor(ContractStatus.ACTIVE, sampleTenant);
+        for (LocalDate date : new LocalDate[]{null, LocalDate.now().minusDays(1), sampleContract.getEndDate()}) {
+            assertThrows(AppException.class, () -> contractService.requestClosure(contractId, proposal(date), sampleTenant.getEmail()));
+        }
+        for (double amount : new double[]{-1, 0, 4000000, 5000000, Double.NaN, Double.POSITIVE_INFINITY}) {
+            var request = proposal(LocalDate.now().plusDays(1));
+            request.setRefundAmount(amount);
+            assertThrows(AppException.class, () -> contractService.requestClosure(contractId, request, sampleTenant.getEmail()));
+        }
+        verify(contractRepository, never()).save(any());
+    }
+
+    @Test
+    void duplicatePendingRequestAndRepeatedResponseAreRejected() {
+        prepareClosureActor(ContractStatus.ACTIVE, sampleLandlord);
+        var closure = pendingClosure(ContractClosure.Kind.EARLY_TERMINATION, LocalDate.now().plusDays(7));
+        sampleContract.getClosureRequests().add(closure);
+        assertThrows(AppException.class, () -> contractService.requestClosure(contractId, proposal(LocalDate.now().plusDays(2)), sampleLandlord.getEmail()));
+        closure.setStatus(ContractClosure.Status.ACCEPTED);
+        assertThrows(AppException.class, () -> contractService.respondClosure(contractId, closure.getRequestId(), RespondClosureRequest.builder().accepted(true).build(), sampleLandlord.getEmail()));
+        verify(contractRepository, never()).save(any());
+    }
+
+    @Test
+    void scheduledTerminationRunsOnAgreedDateAndIsIdempotent() {
+        prepareAcceptedClosure(LocalDate.now());
+        when(roomRepository.findByIdForUpdate(roomId)).thenReturn(Optional.of(sampleRoom));
+        contractService.expireContract(contractId);
+        contractService.expireContract(contractId);
         assertEquals(ContractStatus.TERMINATED, sampleContract.getStatus());
         assertEquals(RoomStatus.APPROVED, sampleRoom.getStatus());
-        verify(roomRepository, times(1)).save(sampleRoom);
+        assertNotNull(sampleContract.getTerminatedAt());
+        assertEquals(ContractClosure.Status.COMPLETED, sampleContract.getClosureRequests().get(0).getStatus());
+        verify(roomRepository, times(1)).save(any());
+    }
+
+    @Test
+    void schedulerDoesNotTerminateBeforeAgreedDate() {
+        prepareAcceptedClosure(LocalDate.now().plusDays(1));
+        contractService.expireContract(contractId);
+        assertEquals(ContractStatus.ACTIVE, sampleContract.getStatus());
+        assertEquals(RoomStatus.RENTED, sampleRoom.getStatus());
+        verify(roomRepository, never()).save(any());
+    }
+
+    @Test
+    void staleRequestedDateCannotBeAcceptedButCanBeRejected() {
+        prepareClosureActor(ContractStatus.ACTIVE, sampleLandlord);
+        var closure = pendingClosure(ContractClosure.Kind.EARLY_TERMINATION, LocalDate.now().minusDays(1));
+        sampleContract.getClosureRequests().add(closure);
+        assertThrows(AppException.class, () -> contractService.respondClosure(contractId, closure.getRequestId(), RespondClosureRequest.builder().accepted(true).build(), sampleLandlord.getEmail()));
+        contractService.respondClosure(contractId, closure.getRequestId(), RespondClosureRequest.builder().accepted(false).reason("Ngày đã qua").build(), sampleLandlord.getEmail());
+        assertEquals(ContractClosure.Status.REJECTED, closure.getStatus());
+    }
+
+    @Test
+    void naturalExpiryLapsesPendingTerminationRequest() {
+        sampleContract.setStatus(ContractStatus.ACTIVE);
+        sampleContract.setEndDate(LocalDate.now().minusDays(1));
+        sampleRoom.setStatus(RoomStatus.RENTED);
+        var closure = pendingClosure(ContractClosure.Kind.EARLY_TERMINATION, LocalDate.now().minusDays(2));
+        sampleContract.getClosureRequests().add(closure);
+        when(contractRepository.findById(contractId)).thenReturn(Optional.of(sampleContract));
+        when(roomRepository.findByIdForUpdate(roomId)).thenReturn(Optional.of(sampleRoom));
+        contractService.expireContract(contractId);
+        assertEquals(ContractStatus.EXPIRED, sampleContract.getStatus());
+        assertEquals(ContractClosure.Status.LAPSED, closure.getStatus());
     }
 }

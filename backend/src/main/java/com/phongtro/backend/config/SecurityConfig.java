@@ -50,6 +50,7 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_WHITE_LIST).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/payments/vnpay/ipn", "/api/v1/payments/vnpay/ipn").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/amenities").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/rooms").permitAll()

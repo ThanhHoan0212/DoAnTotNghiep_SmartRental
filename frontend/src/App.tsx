@@ -14,6 +14,8 @@ import FavoritesPage from "./pages/FavoritesPage";
 import ContractsPage from "./pages/ContractsPage";
 import EkycPage from "./pages/EkycPage";
 
+import VnpayReturnPage from "./pages/VnpayReturnPage";
+
 function App() {
   return (
     <AuthProvider>
@@ -23,6 +25,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/rooms" element={<RoomsPage />} />
         <Route path="/rooms/:id" element={<RoomDetailPage />} />
+        <Route path="/payment/vnpay-return" element={<ProtectedRoute><VnpayReturnPage /></ProtectedRoute>} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route
