@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FptAiFaceMatchResult {
+public class VnptFaceMatchResult {
 
     private Double similarity;
     private Boolean isMatch;

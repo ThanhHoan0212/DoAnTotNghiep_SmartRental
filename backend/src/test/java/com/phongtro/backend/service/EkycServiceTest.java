@@ -1,8 +1,8 @@
 package com.phongtro.backend.service;
 
-import com.phongtro.backend.config.FptAiProperties;
-import com.phongtro.backend.dto.ekyc.FptAiFaceMatchResult;
-import com.phongtro.backend.dto.ekyc.FptAiOcrResult;
+import com.phongtro.backend.config.VnptEkycProperties;
+import com.phongtro.backend.dto.ekyc.VnptFaceMatchResult;
+import com.phongtro.backend.dto.ekyc.VnptOcrResult;
 import com.phongtro.backend.dto.response.EkycStatusResponse;
 import com.phongtro.backend.dto.response.EkycVerificationResponse;
 import com.phongtro.backend.entity.EkycVerification;
@@ -13,7 +13,7 @@ import com.phongtro.backend.exception.AppException;
 import com.phongtro.backend.exception.ErrorCode;
 import com.phongtro.backend.repository.EkycVerificationRepository;
 import com.phongtro.backend.repository.UserRepository;
-import com.phongtro.backend.service.client.FptAiClient;
+import com.phongtro.backend.service.client.VnptEkycClient;
 import com.phongtro.backend.service.impl.EkycServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -43,10 +43,10 @@ class EkycServiceTest {
     private EkycVerificationRepository ekycVerificationRepository;
 
     @Mock
-    private FptAiClient fptAiClient;
+    private VnptEkycClient vnptEkycClient;
 
     @Mock
-    private FptAiProperties fptAiProperties;
+    private VnptEkycProperties vnptEkycProperties;
 
     @InjectMocks
     private EkycServiceImpl ekycService;
@@ -71,13 +71,13 @@ class EkycServiceTest {
         backFile = new MockMultipartFile("backImage", "back.jpg", "image/jpeg", "dummy-back-bytes".getBytes());
         selfieFile = new MockMultipartFile("selfieImage", "selfie.jpg", "image/jpeg", "dummy-selfie-bytes".getBytes());
 
-        lenient().when(fptAiProperties.getConfidenceThreshold()).thenReturn(85.0);
+        lenient().when(vnptEkycProperties.getConfidenceThreshold()).thenReturn(85.0);
     }
 
     @Test
     @DisplayName("Xác thực eKYC thành công: Điểm tin cậy 92.5% > 85% -> Cấp chứng nhận định danh")
     void verifyIdentity_WhenConfidenceAbove85_ShouldSucceedAndMarkUserVerified() {
-        FptAiOcrResult mockOcr = FptAiOcrResult.builder()
+        VnptOcrResult mockOcr = VnptOcrResult.builder()
                 .idCardNumber("079198001234")
                 .fullName("NGUYỄN VĂN A")
                 .dob("15/08/1998")
@@ -88,15 +88,15 @@ class EkycServiceTest {
                 .rawJson("{}")
                 .build();
 
-        FptAiFaceMatchResult mockFaceMatch = FptAiFaceMatchResult.builder()
+        VnptFaceMatchResult mockFaceMatch = VnptFaceMatchResult.builder()
                 .similarity(92.5)
                 .isMatch(true)
                 .rawJson("{}")
                 .build();
 
         when(userRepository.findByEmail(sampleUser.getEmail())).thenReturn(Optional.of(sampleUser));
-        when(fptAiClient.extractIdCard(frontFile, backFile)).thenReturn(mockOcr);
-        when(fptAiClient.matchFaces(frontFile, selfieFile)).thenReturn(mockFaceMatch);
+        when(vnptEkycClient.extractIdCard(frontFile, backFile)).thenReturn(mockOcr);
+        when(vnptEkycClient.matchFaces(frontFile, selfieFile)).thenReturn(mockFaceMatch);
         when(ekycVerificationRepository.save(any(EkycVerification.class))).thenAnswer(i -> i.getArgument(0));
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
 
@@ -123,22 +123,22 @@ class EkycServiceTest {
     @Test
     @DisplayName("Xác thực eKYC thất bại: Điểm tin cậy 65.0% <= 85% -> Ghi nhận thất bại và ném ngoại lệ")
     void verifyIdentity_WhenConfidenceBelow85_ShouldRecordFailureAndThrowException() {
-        FptAiOcrResult mockOcr = FptAiOcrResult.builder()
+        VnptOcrResult mockOcr = VnptOcrResult.builder()
                 .idCardNumber("079198001234")
                 .fullName("NGUYỄN VĂN A")
                 .dob("15/08/1998")
                 .rawJson("{}")
                 .build();
 
-        FptAiFaceMatchResult mockFaceMatch = FptAiFaceMatchResult.builder()
+        VnptFaceMatchResult mockFaceMatch = VnptFaceMatchResult.builder()
                 .similarity(65.0) // Thấp hơn 85%
                 .isMatch(false)
                 .rawJson("{}")
                 .build();
 
         when(userRepository.findByEmail(sampleUser.getEmail())).thenReturn(Optional.of(sampleUser));
-        when(fptAiClient.extractIdCard(frontFile, backFile)).thenReturn(mockOcr);
-        when(fptAiClient.matchFaces(frontFile, selfieFile)).thenReturn(mockFaceMatch);
+        when(vnptEkycClient.extractIdCard(frontFile, backFile)).thenReturn(mockOcr);
+        when(vnptEkycClient.matchFaces(frontFile, selfieFile)).thenReturn(mockFaceMatch);
 
         AppException ex = assertThrows(AppException.class, () ->
                 ekycService.verifyIdentity(frontFile, backFile, selfieFile, sampleUser.getEmail()));
@@ -158,20 +158,20 @@ class EkycServiceTest {
     @Test
     @DisplayName("Xác thực eKYC thất bại: Ảnh CCCD không nhận diện được số giấy tờ hợp lệ")
     void verifyIdentity_WhenOcrFailsToDetectIdNumber_ShouldThrowException() {
-        FptAiOcrResult mockEmptyOcr = FptAiOcrResult.builder()
+        VnptOcrResult mockEmptyOcr = VnptOcrResult.builder()
                 .idCardNumber("") // Trống do ảnh mờ
                 .rawJson("{}")
                 .build();
 
         when(userRepository.findByEmail(sampleUser.getEmail())).thenReturn(Optional.of(sampleUser));
-        when(fptAiClient.extractIdCard(frontFile, backFile)).thenReturn(mockEmptyOcr);
+        when(vnptEkycClient.extractIdCard(frontFile, backFile)).thenReturn(mockEmptyOcr);
 
         AppException ex = assertThrows(AppException.class, () ->
                 ekycService.verifyIdentity(frontFile, backFile, selfieFile, sampleUser.getEmail()));
 
         assertEquals(ErrorCode.EKYC_VERIFICATION_FAILED, ex.getErrorCode());
         assertTrue(ex.getMessage().contains("Không thể bóc tách thông tin"));
-        verify(fptAiClient, never()).matchFaces(any(), any());
+        verify(vnptEkycClient, never()).matchFaces(any(), any());
     }
 
     @Test
@@ -217,7 +217,7 @@ class EkycServiceTest {
     @Test
     @DisplayName("Xác thực eKYC thất bại: Số CCCD khai báo không trùng khớp với số trên thẻ CCCD")
     void verifyIdentity_WhenDeclaredCccdDoesNotMatch_ShouldThrowException() {
-        FptAiOcrResult mockOcr = FptAiOcrResult.builder()
+        VnptOcrResult mockOcr = VnptOcrResult.builder()
                 .idCardNumber("079198001234")
                 .fullName("NGUYỄN VĂN A")
                 .dob("15/08/1998")
@@ -227,7 +227,7 @@ class EkycServiceTest {
                 .build();
 
         when(userRepository.findByEmail(sampleUser.getEmail())).thenReturn(Optional.of(sampleUser));
-        when(fptAiClient.extractIdCard(frontFile, backFile)).thenReturn(mockOcr);
+        when(vnptEkycClient.extractIdCard(frontFile, backFile)).thenReturn(mockOcr);
         when(ekycVerificationRepository.save(any(EkycVerification.class))).thenAnswer(i -> i.getArgument(0));
 
         AppException ex = assertThrows(AppException.class, () ->
@@ -239,13 +239,13 @@ class EkycServiceTest {
 
         assertEquals(ErrorCode.EKYC_VERIFICATION_FAILED, ex.getErrorCode());
         assertTrue(ex.getMessage().contains("Số CCCD bạn đã khai báo"));
-        verify(fptAiClient, never()).matchFaces(any(), any());
+        verify(vnptEkycClient, never()).matchFaces(any(), any());
     }
 
     @Test
     @DisplayName("Xác thực eKYC thất bại: Họ tên khai báo không trùng khớp với tên trên thẻ CCCD")
     void verifyIdentity_WhenDeclaredNameDoesNotMatch_ShouldThrowException() {
-        FptAiOcrResult mockOcr = FptAiOcrResult.builder()
+        VnptOcrResult mockOcr = VnptOcrResult.builder()
                 .idCardNumber("079198001234")
                 .fullName("NGUYỄN VĂN A")
                 .dob("15/08/1998")
@@ -255,7 +255,7 @@ class EkycServiceTest {
                 .build();
 
         when(userRepository.findByEmail(sampleUser.getEmail())).thenReturn(Optional.of(sampleUser));
-        when(fptAiClient.extractIdCard(frontFile, backFile)).thenReturn(mockOcr);
+        when(vnptEkycClient.extractIdCard(frontFile, backFile)).thenReturn(mockOcr);
         when(ekycVerificationRepository.save(any(EkycVerification.class))).thenAnswer(i -> i.getArgument(0));
 
         AppException ex = assertThrows(AppException.class, () ->
@@ -267,6 +267,6 @@ class EkycServiceTest {
 
         assertEquals(ErrorCode.EKYC_VERIFICATION_FAILED, ex.getErrorCode());
         assertTrue(ex.getMessage().contains("Họ tên bạn đã khai báo"));
-        verify(fptAiClient, never()).matchFaces(any(), any());
+        verify(vnptEkycClient, never()).matchFaces(any(), any());
     }
 }

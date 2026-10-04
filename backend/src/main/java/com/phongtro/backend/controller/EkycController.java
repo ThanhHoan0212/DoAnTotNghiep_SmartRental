@@ -22,7 +22,7 @@ import java.util.List;
 @RequestMapping("/api/v1/ekyc")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "BearerAuth")
-@Tag(name = "10. eKYC Identity Verification", description = "Định danh điện tử eKYC qua FPT.AI (CCCD OCR & Face Matching > 85%)")
+@Tag(name = "10. eKYC Identity Verification", description = "Định danh điện tử eKYC qua VNPT eKYC (CCCD OCR & Face Compare > 85%)")
 public class EkycController {
 
     private final EkycService ekycService;
@@ -30,7 +30,7 @@ public class EkycController {
     @PostMapping(value = "/verify", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Xác thực danh tính eKYC (Chụp CCCD 2 mặt & Chân dung selfie)",
-            description = "Gửi ảnh CCCD mặt trước, mặt sau, ảnh selfie và thông tin khai báo để bóc tách thông tin và so khớp khuôn mặt qua FPT.AI (hoặc Smart Sandbox). Điểm tin cậy > 85% sẽ được cấp chứng nhận.")
+            description = "Gửi ảnh CCCD mặt trước, mặt sau, ảnh selfie và thông tin khai báo để bóc tách thông tin và so khớp khuôn mặt qua VNPT eKYC (hoặc Smart Sandbox). Điểm tin cậy > 85% sẽ được cấp chứng nhận.")
     public ResponseEntity<ApiResponse<EkycVerificationResponse>> verifyIdentity(
             Authentication authentication,
             @RequestParam("frontImage") MultipartFile frontImage,
@@ -39,13 +39,15 @@ public class EkycController {
             @RequestParam(value = "declaredIdCardNumber", required = false) String declaredIdCardNumber,
             @RequestParam(value = "declaredFullName", required = false) String declaredFullName,
             @RequestParam(value = "declaredDob", required = false) String declaredDob,
+            @RequestParam(value = "vnptToken", required = false) String vnptToken,
             @RequestParam(value = "fptApiKey", required = false) String fptApiKey,
             @RequestParam(value = "simulatedMismatch", required = false, defaultValue = "false") boolean simulatedMismatch
     ) {
+        String effectiveToken = (vnptToken != null && !vnptToken.trim().isEmpty()) ? vnptToken : fptApiKey;
         EkycVerificationResponse response = ekycService.verifyIdentity(
                 frontImage, backImage, selfieImage,
                 declaredIdCardNumber, declaredFullName, declaredDob,
-                fptApiKey, simulatedMismatch,
+                effectiveToken, simulatedMismatch,
                 authentication.getName()
         );
         return ResponseEntity.ok(ApiResponse.success(response.getMessage(), response));

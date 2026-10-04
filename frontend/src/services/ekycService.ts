@@ -10,7 +10,7 @@ export const ekycService = {
     backImage: File,
     selfieImage: File,
     personalInfo?: EkycPersonalInfo,
-    fptApiKey?: string,
+    vnptToken?: string,
     simulatedMismatch?: boolean
   ): Promise<EkycVerificationResponse> {
     const formData = new FormData();
@@ -24,8 +24,8 @@ export const ekycService = {
       if (personalInfo.dob) formData.append('declaredDob', personalInfo.dob.trim());
     }
 
-    if (fptApiKey && fptApiKey.trim()) {
-      formData.append('fptApiKey', fptApiKey.trim());
+    if (vnptToken && vnptToken.trim()) {
+      formData.append('vnptToken', vnptToken.trim());
     }
 
     if (simulatedMismatch) {

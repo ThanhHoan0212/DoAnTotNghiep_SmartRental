@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FptAiOcrResult {
+public class VnptOcrResult {
 
     private String idCardNumber;
     private String fullName;
@@ -18,6 +18,7 @@ public class FptAiOcrResult {
     private String address;
     private String hometown;
     private String issueDate;
+    private String issuePlace;
     private String cardType;
     private String rawJson;
 }

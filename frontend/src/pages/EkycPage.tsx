@@ -18,10 +18,15 @@ import {
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ekycService } from '../services/ekycService';
-import type { EkycVerificationResponse, EkycPersonalInfo } from '../types/ekyc';
+import type { EkycVerificationResponse, EkycPersonalInfo, EkycStatusResponse } from '../types/ekyc';
 
 export default function EkycPage() {
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser, isLoading: isAuthLoading } = useAuth();
+
+  // Trạng thái định danh eKYC hiện tại của tài khoản
+  const [ekycStatus, setEkycStatus] = useState<EkycStatusResponse | null>(null);
+  const [isLoadingStatus, setIsLoadingStatus] = useState<boolean>(true);
+  const [isReverifying, setIsReverifying] = useState<boolean>(false);
 
   // Wizard state: 1 (Info) | 2 (CCCD Camera) | 3 (Selfie Camera) | 4 (Result)
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(1);
@@ -61,6 +66,47 @@ export default function EkycPage() {
   const [processingStage, setProcessingStage] = useState<string>('');
   const [result, setResult] = useState<EkycVerificationResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Tải trạng thái eKYC hiện tại của tài khoản khi vào trang
+  useEffect(() => {
+    let isMounted = true;
+    const fetchStatus = async () => {
+      try {
+        setIsLoadingStatus(true);
+        const [status] = await Promise.all([
+          ekycService.getEkycStatus().catch(() => null),
+          refreshUser().catch(() => null),
+        ]);
+        if (isMounted && status) {
+          setEkycStatus(status);
+        }
+      } catch (err) {
+        console.warn('Không thể lấy trạng thái eKYC:', err);
+      } finally {
+        if (isMounted) {
+          setIsLoadingStatus(false);
+        }
+      }
+    };
+
+    fetchStatus();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Đồng bộ thông tin cá nhân khi user hoặc ekycStatus cập nhật
+  useEffect(() => {
+    if (user || ekycStatus) {
+      setPersonalInfo((prev) => ({
+        ...prev,
+        fullName: prev.fullName || ekycStatus?.idCardName || user?.idCardName || user?.fullName || '',
+        idCardNumber: prev.idCardNumber || user?.idCardNumber || '',
+        phone: prev.phone || user?.phone || '',
+      }));
+    }
+  }, [user, ekycStatus]);
 
   // Dọn dẹp object URLs khi component unmount
   useEffect(() => {
@@ -239,7 +285,7 @@ export default function EkycPage() {
     setCurrentStep(2);
   };
 
-  // Xử lý gửi toàn bộ dữ liệu đi xác thực AI (FPT.AI)
+  // Xử lý gửi toàn bộ dữ liệu đi xác thực AI (VNPT eKYC)
   const handleFinalVerify = async () => {
     setErrorMessage(null);
 
@@ -253,13 +299,13 @@ export default function EkycPage() {
       setIsProcessing(true);
 
       // Mô phỏng hiệu ứng quét AI từng giai đoạn trực quan
-      setProcessingStage('Đang kết nối hạ tầng FPT.AI và truyền dữ liệu mã hóa...');
+      setProcessingStage('Đang kết nối hạ tầng VNPT eKYC và truyền dữ liệu mã hóa...');
       await new Promise((r) => setTimeout(r, 600));
 
-      setProcessingStage('Đang bóc tách thông tin thẻ Căn cước công dân (FPT.AI OCR)...');
+      setProcessingStage('Đang bóc tách thông tin thẻ Căn cước công dân (VNPT AI OCR)...');
       await new Promise((r) => setTimeout(r, 700));
 
-      setProcessingStage('Đang so khớp vector khuôn mặt CCCD với ảnh Selfie (Face Matching v4)...');
+      setProcessingStage('Đang so khớp vector khuôn mặt CCCD với ảnh Selfie (VNPT Face Compare)...');
       const res = await ekycService.verifyEkyc(
         frontFile,
         backFile,
@@ -272,6 +318,10 @@ export default function EkycPage() {
 
       setResult(res);
       await refreshUser();
+      const freshStatus = await ekycService.getEkycStatus().catch(() => null);
+      if (freshStatus) {
+        setEkycStatus(freshStatus);
+      }
       setCurrentStep(4);
     } catch (err: any) {
       console.error('Lỗi khi gọi API eKYC:', err);
@@ -301,7 +351,125 @@ export default function EkycPage() {
     setSelfiePreview(null);
     setCccdSubStep('front');
     setCurrentStep(1);
+    setIsReverifying(true);
   };
+
+  const isAlreadyVerified =
+    Boolean(user?.isIdentityVerified || ekycStatus?.isIdentityVerified) &&
+    !isReverifying &&
+    !result;
+
+  const verifiedConfidenceScore =
+    ekycStatus?.confidenceScore ??
+    user?.ekycConfidenceScore ??
+    (result?.confidenceScore ?? 92.5);
+
+  const verifiedName =
+    ekycStatus?.idCardName ||
+    user?.idCardName ||
+    user?.fullName ||
+    'Người dùng SmartRental';
+
+  const verifiedIdCardNumber =
+    ekycStatus?.idCardNumberMasked ||
+    user?.idCardNumber ||
+    '079******888';
+
+  const verifiedDateStr = ekycStatus?.verifiedAt || user?.ekycVerifiedAt;
+  const formattedVerifiedDate = verifiedDateStr
+    ? new Date(verifiedDateStr).toLocaleString('vi-VN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : 'Hôm nay';
+
+  if (isLoadingStatus) {
+    return (
+      <main className="page" style={{ padding: '60px 0', minHeight: '85vh', background: '#f8fafc' }}>
+        <div
+          className="container"
+          style={{
+            maxWidth: '520px',
+            margin: '0 auto',
+            textAlign: 'center',
+            background: '#ffffff',
+            padding: '48px 24px',
+            borderRadius: '16px',
+            border: '1px solid #e2e8f0',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.03)',
+          }}
+        >
+          <div
+            style={{
+              width: '56px',
+              height: '56px',
+              borderRadius: '50%',
+              background: '#ecfdf5',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 16px auto',
+            }}
+          >
+            <RefreshCw size={28} color="#167c5a" style={{ animation: 'spin 1.5s linear infinite' }} />
+          </div>
+          <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#0f172a', marginBottom: '6px' }}>
+            Đang kiểm tra hồ sơ eKYC...
+          </h3>
+          <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>
+            Hệ thống đang tải dữ liệu định danh của bạn, vui lòng đợi trong giây lát.
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!user && !isAuthLoading) {
+    return (
+      <main className="page" style={{ padding: '60px 0', minHeight: '85vh', background: '#f8fafc' }}>
+        <div
+          className="container"
+          style={{
+            maxWidth: '520px',
+            margin: '0 auto',
+            textAlign: 'center',
+            background: '#ffffff',
+            padding: '48px 24px',
+            borderRadius: '16px',
+            border: '1px solid #e2e8f0',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.03)',
+          }}
+        >
+          <div
+            style={{
+              width: '56px',
+              height: '56px',
+              borderRadius: '50%',
+              background: '#f1f5f9',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 16px auto',
+            }}
+          >
+            <Lock size={28} color="#64748b" />
+          </div>
+          <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#0f172a', marginBottom: '8px' }}>
+            Yêu Cầu Đăng Nhập
+          </h3>
+          <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '24px' }}>
+            Vui lòng đăng nhập tài khoản để thực hiện định danh điện tử hoặc xem chứng chỉ eKYC đã xác thực.
+          </p>
+          <Link to="/login" className="btn btn-primary" style={{ padding: '10px 24px' }}>
+            Đăng nhập ngay
+          </Link>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="page" style={{ padding: '40px 0', minHeight: '85vh', background: '#f8fafc' }}>
@@ -309,35 +477,364 @@ export default function EkycPage() {
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 
       <div className="container" style={{ maxWidth: '860px', margin: '0 auto' }}>
-        {/* Banner giới thiệu */}
-        <div style={{ marginBottom: '28px', textAlign: 'center' }}>
+        {isAlreadyVerified ? (
+          /* MÀN HÌNH CHỨNG NHẬN ĐÃ XÁC THỰC THÀNH CÔNG */
           <div
             style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              background: '#ecfdf5',
-              color: '#059669',
-              padding: '6px 14px',
+              background: '#ffffff',
+              padding: '40px 32px',
               borderRadius: '20px',
-              fontSize: '13px',
-              fontWeight: 700,
-              marginBottom: '10px',
-              border: '1px solid #a7f3d0',
+              border: '1px solid #e2e8f0',
+              boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01)',
             }}
           >
-            <Sparkles size={16} />
-            <span>HỆ THỐNG XÁC THỰC NGƯỜI DÙNG THẬT eKYC CHUẨN FPT.AI</span>
+            {/* Tiêu đề & Huy hiệu chứng nhận */}
+            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+              <div
+                style={{
+                  width: '80px',
+                  height: '80px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)',
+                  color: '#15803d',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 18px auto',
+                  boxShadow: '0 8px 16px rgba(22, 124, 90, 0.15)',
+                }}
+              >
+                <ShieldCheck size={48} strokeWidth={2.2} />
+              </div>
+
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: '#ecfdf5',
+                  color: '#059669',
+                  padding: '6px 16px',
+                  borderRadius: '20px',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  marginBottom: '12px',
+                  border: '1px solid #a7f3d0',
+                }}
+              >
+                <Sparkles size={16} />
+                <span>HỒ SƠ ĐÃ ĐỊNH DANH ĐIỆN TỬ eKYC THÀNH CÔNG</span>
+              </div>
+
+              <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#0f172a', margin: '4px 0 8px 0' }}>
+                Tài Khoản Đã Được Xác Thực Danh Tính Thật
+              </h1>
+              <p style={{ color: '#64748b', fontSize: '15px', maxWidth: '600px', margin: '0 auto' }}>
+                Hồ sơ Căn cước công dân và sinh trắc học khuôn mặt của bạn đã được đối soát qua công nghệ{' '}
+                <strong>VNPT AI</strong> và được cấp chứng chỉ người dùng thật trên SmartRental.
+              </p>
+            </div>
+
+            {/* Khung số liệu tin cậy */}
+            <div
+              style={{
+                background: '#f0fdf4',
+                border: '1px solid #bbf7d0',
+                borderRadius: '16px',
+                padding: '24px',
+                marginBottom: '28px',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                gap: '20px',
+                textAlign: 'center',
+              }}
+            >
+              <div>
+                <div style={{ fontSize: '13px', color: '#166534', fontWeight: 600, marginBottom: '4px' }}>
+                  Độ tương đồng khuôn mặt
+                </div>
+                <div style={{ fontSize: '36px', fontWeight: 800, color: '#15803d', lineHeight: 1.1 }}>
+                  {verifiedConfidenceScore.toFixed(1)}%
+                </div>
+                <div style={{ fontSize: '12px', color: '#15803d', fontWeight: 700, marginTop: '4px' }}>
+                  ✓ Đạt chuẩn an toàn (&gt; 85.0%)
+                </div>
+              </div>
+
+              <div style={{ borderLeft: '1px solid #bbf7d0', paddingLeft: '10px' }}>
+                <div style={{ fontSize: '13px', color: '#166534', fontWeight: 600, marginBottom: '4px' }}>
+                  Trạng thái xác thực
+                </div>
+                <div
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    fontSize: '18px',
+                    fontWeight: 800,
+                    color: '#15803d',
+                    marginTop: '6px',
+                  }}
+                >
+                  <CheckCircle2 size={20} />
+                  <span>ĐÃ ĐƯỢC CHỨNG NHẬN</span>
+                </div>
+                <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
+                  Gắn huy hiệu tích xanh uy tín
+                </div>
+              </div>
+
+              <div style={{ borderLeft: '1px solid #bbf7d0', paddingLeft: '10px' }}>
+                <div style={{ fontSize: '13px', color: '#166534', fontWeight: 600, marginBottom: '4px' }}>
+                  Thời điểm cấp chứng chỉ
+                </div>
+                <div style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a', marginTop: '8px' }}>
+                  {formattedVerifiedDate}
+                </div>
+                <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
+                  Công nghệ: VNPT eKYC IDG
+                </div>
+              </div>
+            </div>
+
+            {/* Bảng chi tiết thông tin định danh */}
+            <div style={{ marginBottom: '28px' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a', marginBottom: '12px' }}>
+                Thông tin danh tính đã được kiểm định:
+              </h3>
+              <div
+                style={{
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  fontSize: '14px',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '200px 1fr',
+                    padding: '14px 18px',
+                    background: '#f8fafc',
+                    borderBottom: '1px solid #e2e8f0',
+                  }}
+                >
+                  <strong style={{ color: '#475569' }}>Họ và tên chủ thẻ:</strong>
+                  <span style={{ fontWeight: 700, color: '#0f172a' }}>{verifiedName}</span>
+                </div>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '200px 1fr',
+                    padding: '14px 18px',
+                    background: '#ffffff',
+                    borderBottom: '1px solid #e2e8f0',
+                  }}
+                >
+                  <strong style={{ color: '#475569' }}>Số thẻ CCCD:</strong>
+                  <span style={{ fontWeight: 700, color: '#0f172a', letterSpacing: '1px' }}>
+                    {verifiedIdCardNumber}
+                  </span>
+                </div>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '200px 1fr',
+                    padding: '14px 18px',
+                    background: '#f8fafc',
+                    borderBottom: '1px solid #e2e8f0',
+                  }}
+                >
+                  <strong style={{ color: '#475569' }}>Phương thức bảo mật:</strong>
+                  <span style={{ color: '#0f172a' }}>
+                    Trí tuệ nhân tạo VNPT AI (Bóc tách OCR & So khớp khuôn mặt trực tiếp)
+                  </span>
+                </div>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '200px 1fr',
+                    padding: '14px 18px',
+                    background: '#ffffff',
+                  }}
+                >
+                  <strong style={{ color: '#475569' }}>Tình trạng liên kết:</strong>
+                  <span style={{ color: '#16a34a', fontWeight: 600 }}>
+                    ✓ Đã liên kết cố định với tài khoản SmartRental
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quyền lợi đã mở khóa */}
+            <div
+              style={{
+                background: '#ecfdf5',
+                border: '1px solid #a7f3d0',
+                borderRadius: '12px',
+                padding: '20px',
+                marginBottom: '32px',
+              }}
+            >
+              <div style={{ fontWeight: 700, color: '#065f46', fontSize: '15px', marginBottom: '8px' }}>
+                Toàn bộ đặc quyền thành viên đã được kích hoạt:
+              </div>
+              <ul style={{ margin: 0, paddingLeft: '22px', color: '#047857', fontSize: '14px', lineHeight: 1.7 }}>
+                <li>
+                  <strong>Đăng tin cho thuê:</strong> Được phép đăng tải và quản lý danh sách phòng trọ cho thuê
+                  trên toàn hệ thống mà không bị giới hạn.
+                </li>
+                <li>
+                  <strong>Hợp đồng & Đặt cọc an toàn:</strong> Đủ điều kiện tạo và ký kết hợp đồng điện tử có tính
+                  pháp lý bảo vệ quyền lợi hai bên.
+                </li>
+                <li>
+                  <strong>Huy hiệu Tích Xanh Uy Tín:</strong> Hiển thị công khai biểu tượng <em>✓ eKYC</em> trên hồ
+                  sơ và tin đăng giúp thu hút khách thuê nhanh gấp 3 lần.
+                </li>
+              </ul>
+            </div>
+
+            {/* Nút hành động */}
+            <div
+              style={{
+                display: 'flex',
+                gap: '12px',
+                justifyContent: 'center',
+                flexWrap: 'wrap',
+                marginBottom: '24px',
+              }}
+            >
+              <Link
+                to="/post-room"
+                className="btn btn-primary"
+                style={{ padding: '12px 24px', fontSize: '14px', fontWeight: 600 }}
+              >
+                Đăng tin phòng trọ ngay
+              </Link>
+              <Link
+                to="/rooms"
+                className="btn btn-outline"
+                style={{ padding: '12px 24px', fontSize: '14px', fontWeight: 600 }}
+              >
+                Tìm phòng trọ
+              </Link>
+              <Link
+                to="/profile"
+                className="btn btn-outline"
+                style={{ padding: '12px 24px', fontSize: '14px', fontWeight: 600 }}
+              >
+                Xem hồ sơ cá nhân
+              </Link>
+            </div>
+
+            {/* Tùy chọn xác thực lại khi đổi CCCD mới */}
+            <div
+              style={{
+                borderTop: '1px dashed #cbd5e1',
+                paddingTop: '20px',
+                textAlign: 'center',
+              }}
+            >
+              <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '8px' }}>
+                Bạn vừa làm lại thẻ Căn cước công dân gắn chip mới hoặc cần cập nhật lại thông tin cá nhân?
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsReverifying(true);
+                  setCurrentStep(1);
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#167c5a',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  textDecoration: 'underline',
+                }}
+              >
+                <RefreshCw size={14} />
+                <span>Thực hiện xác thực lại / Cập nhật thẻ CCCD mới</span>
+              </button>
+            </div>
           </div>
-          <h1 style={{ fontSize: '28px', fontWeight: 800, color: '#0f172a', margin: '4px 0 8px 0' }}>
-            Định Danh Điện Tử An Toàn (eKYC)
-          </h1>
-          <p style={{ color: '#64748b', fontSize: '15px', maxWidth: '640px', margin: '0 auto' }}>
-            Quy trình gồm 3 bước bắt buộc: <strong>Khai báo thông tin</strong> $\rightarrow${' '}
-            <strong>Chụp CCCD trực tiếp</strong> $\rightarrow$ <strong>Selfie khuôn mặt trực tiếp</strong>. Điểm tin cậy
-            yêu cầu <strong>&gt; 85%</strong>.
-          </p>
-        </div>
+        ) : (
+          <>
+            {isReverifying && (
+              <div
+                style={{
+                  marginBottom: '20px',
+                  background: '#f8fafc',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '10px',
+                  padding: '12px 16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: '10px',
+                }}
+              >
+                <div style={{ fontSize: '13px', color: '#334155' }}>
+                  ℹ️ Bạn đang thực hiện xác thực lại / cập nhật thông tin CCCD mới.
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsReverifying(false)}
+                  style={{
+                    background: '#ffffff',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '6px',
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    color: '#475569',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                  }}
+                >
+                  <ArrowLeft size={14} />
+                  <span>Quay lại chứng chỉ đã duyệt</span>
+                </button>
+              </div>
+            )}
+
+            {/* Banner giới thiệu */}
+            <div style={{ marginBottom: '28px', textAlign: 'center' }}>
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: '#ecfdf5',
+                  color: '#059669',
+                  padding: '6px 14px',
+                  borderRadius: '20px',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  marginBottom: '10px',
+                  border: '1px solid #a7f3d0',
+                }}
+              >
+                <Sparkles size={16} />
+                <span>HỆ THỐNG XÁC THỰC NGƯỜI DÙNG THẬT eKYC CHUẨN VNPT AI</span>
+              </div>
+              <h1 style={{ fontSize: '28px', fontWeight: 800, color: '#0f172a', margin: '4px 0 8px 0' }}>
+                Định Danh Điện Tử An Toàn (eKYC)
+              </h1>
+              <p style={{ color: '#64748b', fontSize: '15px', maxWidth: '640px', margin: '0 auto' }}>
+                Quy trình gồm 3 bước bắt buộc: <strong>Khai báo thông tin</strong> $\rightarrow${' '}
+                <strong>Chụp CCCD trực tiếp</strong> $\rightarrow$ <strong>Selfie khuôn mặt trực tiếp</strong>. Điểm tin cậy
+                yêu cầu <strong>&gt; 85%</strong>.
+              </p>
+            </div>
 
         {/* Thanh tiến trình Stepper 3 bước */}
         <div
@@ -1081,7 +1578,7 @@ export default function EkycPage() {
               </h2>
             </div>
             <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '20px' }}>
-              Vui lòng nhìn thẳng vào ống kính camera phía trước. Không đeo khẩu trang hoặc kính râm. Hệ thống FPT.AI sẽ
+              Vui lòng nhìn thẳng vào ống kính camera phía trước. Không đeo khẩu trang hoặc kính râm. Hệ thống VNPT AI sẽ
               đối chiếu khuôn mặt selfie này với ảnh chân dung trên thẻ CCCD vừa chụp (ngưỡng an toàn &gt; 85%).
             </p>
 
@@ -1286,7 +1783,7 @@ export default function EkycPage() {
                   </div>
                 </div>
 
-                {/* Cổng xác thực FPT.AI Trực Tiếp (Live Production) */}
+                {/* Cổng xác thực VNPT eKYC Trực Tiếp (Live Production) */}
                 <div
                   style={{
                     background: '#f8fafc',
@@ -1305,10 +1802,10 @@ export default function EkycPage() {
                   <ShieldCheck size={26} color="#167c5a" style={{ flexShrink: 0 }} />
                   <div>
                     <div style={{ fontWeight: 700, color: '#0f172a', marginBottom: '2px' }}>
-                      Cổng xác thực FPT.AI Trực Tiếp (Live Production)
+                      Cổng xác thực VNPT eKYC Trực Tiếp (Live Production)
                     </div>
                     <div style={{ fontSize: '12px', color: '#64748b' }}>
-                      Hình ảnh chụp trực tiếp sẽ được gửi tới FPT.AI IDR VNM và FaceMatch v4. Yêu cầu độ tương đồng khuôn mặt đạt trên 85.0% và thông tin CCCD trùng khớp 100% để cấp chứng nhận.
+                      Hình ảnh chụp trực tiếp sẽ được gửi tới VNPT eKYC OCR và Face Compare. Yêu cầu độ tương đồng khuôn mặt đạt trên 85.0% và thông tin CCCD trùng khớp 100% để cấp chứng nhận.
                     </div>
                   </div>
                 </div>
@@ -1326,7 +1823,7 @@ export default function EkycPage() {
                       boxShadow: '0 4px 16px rgba(22, 124, 90, 0.4)',
                     }}
                   >
-                    🚀 GỬI DỮ LIỆU XÁC THỰC VỚI FPT.AI (&gt; 85%)
+                    🚀 GỬI DỮ LIỆU XÁC THỰC VỚI VNPT eKYC (&gt; 85%)
                   </button>
                 </div>
               </div>
@@ -1362,7 +1859,7 @@ export default function EkycPage() {
               <RefreshCw size={32} color="#167c5a" style={{ animation: 'spin 1.5s linear infinite' }} />
             </div>
             <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#0f172a', marginBottom: '8px' }}>
-              Đang phân tích trí tuệ nhân tạo (FPT.AI Vision & Face Matching)...
+              Đang phân tích trí tuệ nhân tạo (VNPT AI OCR & Face Compare)...
             </h3>
             <p style={{ color: '#64748b', fontSize: '14px', maxWidth: '500px', margin: '0 auto 24px auto' }}>
               {processingStage}
@@ -1446,7 +1943,7 @@ export default function EkycPage() {
                 {/* Bảng đối chiếu thông tin đã bóc tách OCR */}
                 <div style={{ marginBottom: '28px' }}>
                   <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a', marginBottom: '12px' }}>
-                    Kết quả bóc tách dữ liệu CCCD từ FPT.AI (OCR):
+                    Kết quả bóc tách dữ liệu CCCD từ VNPT AI (OCR):
                   </h3>
                   <div
                     style={{
@@ -1565,6 +2062,8 @@ export default function EkycPage() {
               </div>
             )}
           </div>
+        )}
+          </>
         )}
       </div>
     </main>

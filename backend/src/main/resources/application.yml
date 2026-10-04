@@ -57,10 +57,15 @@ app:
   ai-service:
     base-url: ${AI_SERVICE_BASE_URL:http://localhost:8000}
     timeout-seconds: ${AI_SERVICE_TIMEOUT_SECONDS:5}
-  fpt-ai:
-    api-key: ${FPT_AI_API_KEY:J9Zmq8YOudk0xlInGXQ2N8UF7RYTbviw}
-    ocr-url: ${FPT_AI_OCR_URL:https://api.fpt.ai/vision/idr/vnm}
-    facematch-url: ${FPT_AI_FACEMATCH_URL:https://api.fpt.ai/vision/ekyc/facematch/v4}
-    confidence-threshold: ${FPT_AI_CONFIDENCE_THRESHOLD:85.0}
-    mock-enabled: ${FPT_AI_MOCK_ENABLED:false}
+  vnpt-ekyc:
+    base-url: ${VNPT_EKYC_BASE_URL:https://api.idg.vnpt.vn}
+    access-token: ${VNPT_EKYC_ACCESS_TOKEN:bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0cmFuc2FjdGlvbl9pZCI6IjM4YmRiZmNjLTc3MjktNDk3OC04NmNmLTgyODdjZTBmZjcxNCIsInN1YiI6IjNlOWQ4ZjVmLWJkODEtMTFmMS04ODZhLWQ3YmJkMTQxYjk0MyIsImF1ZCI6WyJyZXN0c2VydmljZSJdLCJ1c2VyX25hbWUiOiJuZ3V5ZW50aGFuaGhvYW4wMjEyQGdtYWlsLmNvbSIsInNjb3BlIjpbInJlYWQiXSwiaXNzIjoiaHR0cHM6Ly9sb2NhbGhvc3QiLCJuYW1lIjoibmd1eWVudGhhbmhob2FuMDIxMkBnbWFpbC5jb20iLCJleHAiOjE3OTA5MzYyNjIsInV1aWRfYWNjb3VudCI6IjNlOWQ4ZjVmLWJkODEtMTFmMS04ODZhLWQ3YmJkMTQxYjk0MyIsImF1dGhvcml0aWVzIjpbIlVTRVIiXSwianRpIjoiZGRmZmU3NjItNWJlMi00MTMxLWJjYTctMjI1MmYwMzMwMzYyIiwiY2xpZW50X2lkIjoiY2xpZW50YXBwIn0.gchlvxJA24HRMvrjhleNFHMQyCRJO5JchMBfHdYHUe8JQYqzkzTZ-1fGtVk9_XR7E2sT-k3lbNl1ZtyNx6NIrOUtBnuF8rxO-jhAnXzfep13urpX1la8SL6Rn_GdRmaozM0U9jKsvHbwzh04LFhwbu8MAMMYzC_8KKPR2N-GqF4sRykAFKUjVnf-DaChc0LFvXiL-wmrlS9nuW97HBBbg3ZdrPfzVknRjp1ZNhylglCDKSTu_uxM31hv2sG7Y7tIwcuYUGp2zgQ8niQU46EZs0BAt-G5GK-qG5ejwxPs7nP-JmcttSZ9P4lqwUEWjwnrqwOB-xhd3yp9KLPbAgAUEw}
+    token-id: ${VNPT_EKYC_TOKEN_ID:5cc5b788-a167-1995-e063-62199f0aa248}
+    token-key: ${VNPT_EKYC_TOKEN_KEY:MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAL4LnVx64JERrJMhqabE/IZ87LU51occfAoKT1ULdPHWwQtIEWFT9Ot1FRBxszF0BipKiUro+wECAofzLs/Mw4MCAwEAAQ==}
+    add-file-url: ${VNPT_EKYC_ADD_FILE_URL:https://api.idg.vnpt.vn/file-service/v1/addFile}
+    ocr-url: ${VNPT_EKYC_OCR_URL:https://api.idg.vnpt.vn/ai/v1/ocr/id}
+    facematch-url: ${VNPT_EKYC_FACEMATCH_URL:https://api.idg.vnpt.vn/ai/v1/face/compare}
+    confidence-threshold: ${VNPT_EKYC_CONFIDENCE_THRESHOLD:85.0}
+    mock-enabled: ${VNPT_EKYC_MOCK_ENABLED:false}
+
 

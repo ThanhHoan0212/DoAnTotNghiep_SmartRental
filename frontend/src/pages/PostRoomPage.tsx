@@ -168,7 +168,7 @@ export default function PostRoomPage() {
                   Yêu cầu xác thực danh tính điện tử eKYC
                 </h3>
                 <p style={{ margin: '4px 0 0', fontSize: '14px', color: '#b45309' }}>
-                  Theo quy định an toàn của SmartRental, người dùng cần hoàn tất xác thực CCCD và khuôn mặt qua FPT.AI (độ tin cậy &gt; 85%) trước khi đăng tin cho thuê phòng để phòng chống tin ảo và lừa đảo.
+                  Theo quy định an toàn của SmartRental, người dùng cần hoàn tất xác thực CCCD và khuôn mặt qua VNPT eKYC (độ tin cậy &gt; 85%) trước khi đăng tin cho thuê phòng để phòng chống tin ảo và lừa đảo.
                 </p>
               </div>
             </div>

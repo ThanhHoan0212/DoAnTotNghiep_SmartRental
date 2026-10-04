@@ -1,8 +1,8 @@
 package com.phongtro.backend.service.impl;
 
-import com.phongtro.backend.config.FptAiProperties;
-import com.phongtro.backend.dto.ekyc.FptAiFaceMatchResult;
-import com.phongtro.backend.dto.ekyc.FptAiOcrResult;
+import com.phongtro.backend.config.VnptEkycProperties;
+import com.phongtro.backend.dto.ekyc.VnptFaceMatchResult;
+import com.phongtro.backend.dto.ekyc.VnptOcrResult;
 import com.phongtro.backend.dto.response.EkycStatusResponse;
 import com.phongtro.backend.dto.response.EkycVerificationResponse;
 import com.phongtro.backend.entity.EkycVerification;
@@ -12,7 +12,7 @@ import com.phongtro.backend.exception.ErrorCode;
 import com.phongtro.backend.repository.EkycVerificationRepository;
 import com.phongtro.backend.repository.UserRepository;
 import com.phongtro.backend.service.EkycService;
-import com.phongtro.backend.service.client.FptAiClient;
+import com.phongtro.backend.service.client.VnptEkycClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,8 +29,8 @@ public class EkycServiceImpl implements EkycService {
 
     private final UserRepository userRepository;
     private final EkycVerificationRepository ekycVerificationRepository;
-    private final FptAiClient fptAiClient;
-    private final FptAiProperties fptAiProperties;
+    private final VnptEkycClient vnptEkycClient;
+    private final VnptEkycProperties vnptEkycProperties;
 
     @Override
     @Transactional
@@ -53,13 +53,13 @@ public class EkycServiceImpl implements EkycService {
         validateImageFile(backImage, "Ảnh mặt sau CCCD");
         validateImageFile(selfieImage, "Ảnh chân dung selfie");
 
-        log.info("Processing eKYC for user [{}] with FPT.AI (Front size: {}, Back size: {}, Selfie size: {})",
+        log.info("Processing eKYC for user [{}] with VNPT eKYC (Front size: {}, Back size: {}, Selfie size: {})",
                 userEmail, frontImage.getSize(), backImage.getSize(), selfieImage.getSize());
 
-        // 2. Bước 1: Gọi FPT.AI trích xuất thông tin thẻ Căn cước công dân (OCR)
-        FptAiOcrResult ocrResult = (customApiKey != null && !customApiKey.trim().isEmpty())
-                ? fptAiClient.extractIdCard(frontImage, backImage, customApiKey)
-                : fptAiClient.extractIdCard(frontImage, backImage);
+        // 2. Bước 1: Gọi VNPT eKYC trích xuất thông tin thẻ Căn cước công dân (OCR)
+        VnptOcrResult ocrResult = (customApiKey != null && !customApiKey.trim().isEmpty())
+                ? vnptEkycClient.extractIdCard(frontImage, backImage, customApiKey)
+                : vnptEkycClient.extractIdCard(frontImage, backImage);
         if (ocrResult == null || ocrResult.getIdCardNumber() == null || ocrResult.getIdCardNumber().trim().isEmpty()) {
             throw new AppException(ErrorCode.EKYC_VERIFICATION_FAILED,
                     "Không thể bóc tách thông tin thẻ CCCD hợp lệ từ ảnh tải lên. Vui lòng chụp rõ nét, đủ ánh sáng và không bị lóa.");
@@ -127,16 +127,16 @@ public class EkycServiceImpl implements EkycService {
             }
         }
 
-        // 3. Bước 2: Gọi FPT.AI so khớp khuôn mặt trên thẻ CCCD với ảnh chân dung Selfie (Face Match)
-        FptAiFaceMatchResult faceMatchResult = (customApiKey != null || simulatedMismatch)
-                ? fptAiClient.matchFaces(frontImage, selfieImage, customApiKey, simulatedMismatch)
-                : fptAiClient.matchFaces(frontImage, selfieImage);
+        // 3. Bước 2: Gọi VNPT eKYC so khớp khuôn mặt trên thẻ CCCD với ảnh chân dung Selfie (Face Compare)
+        VnptFaceMatchResult faceMatchResult = (customApiKey != null || simulatedMismatch)
+                ? vnptEkycClient.matchFaces(frontImage, selfieImage, customApiKey, simulatedMismatch)
+                : vnptEkycClient.matchFaces(frontImage, selfieImage);
         double similarity = (faceMatchResult != null && faceMatchResult.getSimilarity() != null)
                 ? faceMatchResult.getSimilarity()
                 : 0.0;
 
-        double requiredThreshold = (fptAiProperties.getConfidenceThreshold() != null)
-                ? fptAiProperties.getConfidenceThreshold()
+        double requiredThreshold = (vnptEkycProperties.getConfidenceThreshold() != null)
+                ? vnptEkycProperties.getConfidenceThreshold()
                 : 85.0;
 
         boolean isPassed = similarity > requiredThreshold;
@@ -190,7 +190,7 @@ public class EkycServiceImpl implements EkycService {
                 .isSuccess(true)
                 .confidenceScore(similarity)
                 .status("SUCCESS")
-                .message("Xác thực danh tính điện tử eKYC thành công qua FPT.AI")
+                .message("Xác thực danh tính điện tử eKYC thành công qua VNPT eKYC")
                 .idCardNumberMasked(maskIdCardNumber(ocrResult.getIdCardNumber()))
                 .idCardName(ocrResult.getFullName())
                 .idCardDob(ocrResult.getDob())

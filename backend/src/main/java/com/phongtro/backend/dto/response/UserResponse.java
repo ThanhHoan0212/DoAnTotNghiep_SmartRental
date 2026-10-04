@@ -49,11 +49,17 @@ public class UserResponse {
     @Schema(description = "Trạng thái đã định danh eKYC thật", example = "true")
     private boolean isIdentityVerified;
 
+    @Schema(description = "Số CCCD (đã che để bảo mật)", example = "079******123")
+    private String idCardNumber;
+
     @Schema(description = "Họ và tên trên CCCD", example = "NGUYEN VAN A")
     private String idCardName;
 
     @Schema(description = "Điểm tin cậy eKYC (%)", example = "92.5")
     private Double ekycConfidenceScore;
+
+    @Schema(description = "Thời gian xác thực eKYC")
+    private Instant ekycVerifiedAt;
 
     public boolean getIsIdentityVerified() {
         return isIdentityVerified;

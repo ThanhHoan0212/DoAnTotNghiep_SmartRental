@@ -147,7 +147,7 @@ export const RentalRequestModal: React.FC<RentalRequestModalProps> = ({
                   <span>Yêu cầu xác thực danh tính điện tử eKYC</span>
                 </div>
                 <div style={{ lineHeight: 1.5, color: '#78350f' }}>
-                  Để hợp đồng thuê phòng có giá trị pháp lý và bảo vệ quyền lợi đặt cọc của bạn, hệ thống yêu cầu xác thực người dùng thật qua CCCD &amp; nhận diện khuôn mặt (FPT.AI &gt; 85%).
+                  Để hợp đồng thuê phòng có giá trị pháp lý và bảo vệ quyền lợi đặt cọc của bạn, hệ thống yêu cầu xác thực người dùng thật qua CCCD &amp; nhận diện khuôn mặt (VNPT eKYC &gt; 85%).
                 </div>
                 <button
                   type="button"

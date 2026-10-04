@@ -31,8 +31,18 @@ public class UserMapper {
                 .updatedAt(user.getUpdatedAt())
                 .isIdentityVerified(user.isIdentityVerified())
                 .idCardName(user.getIdCardName())
+                .idCardNumber(maskIdCardNumber(user.getIdCardNumber()))
                 .ekycConfidenceScore(user.getEkycConfidenceScore())
+                .ekycVerifiedAt(user.getEkycVerifiedAt())
                 .build();
+    }
+
+    private String maskIdCardNumber(String idCardNumber) {
+        if (idCardNumber == null || idCardNumber.length() < 6) {
+            return idCardNumber;
+        }
+        int len = idCardNumber.length();
+        return idCardNumber.substring(0, 3) + "******" + idCardNumber.substring(len - 3);
     }
 
     /**
