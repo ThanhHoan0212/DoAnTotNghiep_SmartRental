@@ -36,6 +36,17 @@ public class Contract extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String documentContent;
 
+    @Column(columnDefinition = "TEXT")
+    private String tenantSignature;
+
+    @Column(columnDefinition = "TEXT")
+    private String landlordSignature;
+
+    private String tenantSignTxnId;
+    private String landlordSignTxnId;
+    private String tenantCertSerial;
+    private String landlordCertSerial;
+
 
     @Version
     @Column(nullable = false)

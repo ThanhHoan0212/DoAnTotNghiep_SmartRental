@@ -19,8 +19,8 @@ public class VnpayQueryClient {
     public VnpayQueryClient(VnpayProperties config) {
         this.config = config;
         var factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(5000);
-        factory.setReadTimeout(10000);
+        factory.setConnectTimeout(15000);
+        factory.setReadTimeout(50000);
         this.http = RestClient.builder().requestFactory(factory).build();
     }
 

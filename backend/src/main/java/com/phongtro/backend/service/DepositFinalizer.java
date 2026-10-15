@@ -12,17 +12,20 @@ public final class DepositFinalizer {
         contract.setFormalizedAt(now);
         contract.setContractCode("HD-" + today().format(DateTimeFormatter.ofPattern("yyyyMM"))
                 + "-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
-        contract.setDocumentContent("HỢP ĐỒNG THUÊ PHÒNG — BẢN GIẢ LẬP\n"
-                + "Mã hợp đồng: " + contract.getContractCode() + "\n"
-                + "Chủ phòng: " + contract.getLandlord().getFullName() + " (" + contract.getLandlord().getEmail() + ")\n"
-                + "Người thuê: " + contract.getTenant().getFullName() + " (" + contract.getTenant().getEmail() + ")\n"
-                + "Phòng: " + room.getTitle() + "\nĐịa chỉ: " + room.getAddress() + "\n"
-                + "Thời hạn: " + contract.getStartDate() + " đến " + contract.getEndDate() + "\n"
-                + "Tiền thuê mỗi tháng: " + contract.getMonthlyRent() + " VNĐ\n"
-                + "Tiền cọc đã xác nhận: " + contract.getDepositAmount() + " VNĐ\n"
-                + "Điều khoản bổ sung: " + (contract.getTerms() == null ? "Không có" : contract.getTerms()) + "\n"
-                + "Hợp đồng có hiệu lực khi cả người thuê và chủ phòng hoàn tất ký giả lập.\n"
-                + "Đây là môi trường mô phỏng: không thu tiền thật và không tạo chữ ký số được chứng thực.");
+        contract.setDocumentContent("CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM\n"
+                + "Độc lập – Tự do – Hạnh phúc\n"
+                + "--------------------------------------------------\n"
+                + "HỢP ĐỒNG THUÊ PHÒNG TRỌ ĐIỆN TỬ\n"
+                + "Mã hợp đồng: " + contract.getContractCode() + "\n\n"
+                + "1. BÊN CHO THUÊ (BÊN A): " + contract.getLandlord().getFullName() + " - Email: " + contract.getLandlord().getEmail() + "\n"
+                + "2. BÊN THUÊ (BÊN B): " + contract.getTenant().getFullName() + " - Email: " + contract.getTenant().getEmail() + "\n"
+                + "3. TÀI SẢN THUÊ: " + room.getTitle() + " (" + room.getAddress() + ")\n"
+                + "4. THỜI HẠN: Từ ngày " + contract.getStartDate() + " đến ngày " + contract.getEndDate() + "\n"
+                + "5. TIỀN THUÊ: " + String.format("%,d", contract.getMonthlyRent().longValue()) + " VNĐ/tháng\n"
+                + "6. TIỀN CỌC ĐÃ XÁC NHẬN: " + String.format("%,d", contract.getDepositAmount().longValue()) + " VNĐ (Đối soát VNPAY: " + reference + ")\n"
+                + "7. THỎA THUẬN BỔ SUNG: " + (contract.getTerms() == null || contract.getTerms().isBlank() ? "Không có" : contract.getTerms()) + "\n\n"
+                + "Hợp đồng được ký kết dưới dạng thông điệp dữ liệu điện tử có giá trị pháp lý theo Luật Giao dịch điện tử số 20/2023/QH15.\n"
+                + "Hai bên xác nhận nội dung và tiến hành ký số thông qua Dịch vụ Chữ ký số từ xa VNPT SmartCA.");
         contract.setStatus(ContractStatus.AWAITING_SIGNATURES);
     }
     private static LocalDate today() { return LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")); }

@@ -1,17 +1,29 @@
 $ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot
-# Load payment settings without printing secrets. Existing database/IDE settings remain usable.
-Get-Content -LiteralPath (Join-Path $PSScriptRoot '.env') | ForEach-Object {
-    if ($_ -match '^(VNPAY_[A-Z_]+)=(.*)$') {
-        [Environment]::SetEnvironmentVariable($matches[1], $matches[2].Trim(), 'Process')
+
+# Load environment variables from .env
+if (Test-Path (Join-Path $PSScriptRoot '.env')) {
+    Get-Content -LiteralPath (Join-Path $PSScriptRoot '.env') | ForEach-Object {
+        if ($_ -match '^\s*([A-Za-z0-9_]+)\s*=\s*(.*)\s*$') {
+            [Environment]::SetEnvironmentVariable($matches[1], $matches[2].Trim(), 'Process')
+        }
     }
 }
-if ([string]::IsNullOrWhiteSpace($env:VNPAY_HASH_SECRET)) {
-    throw 'Chua dien VNPAY_HASH_SECRET trong backend/.env.'
+
+# Free port 8080 if already in use
+$listeners = @(Get-NetTCPConnection -LocalPort 8080 -State Listen -ErrorAction SilentlyContinue)
+if ($listeners.Count -gt 0) {
+    Write-Host "Cong 8080 dang duoc su dung boi Process ID: $($listeners[0].OwningProcess). Dang giai phong..." -ForegroundColor Yellow
+    Stop-Process -Id $listeners[0].OwningProcess -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Seconds 1
 }
-$paymentListeners = @(Get-NetTCPConnection -LocalPort 8080 -State Listen -ErrorAction SilentlyContinue)
-if ($paymentListeners.Count -gt 0) {
-    throw 'Cong 8080 dang duoc su dung. Dung backend cu trong IntelliJ/terminal truoc khi chay lai.'
+
+# Check if packaged jar exists, if not build it
+$jarPath = ".\target\smart-rental-backend-0.0.1-SNAPSHOT.jar"
+if (-not (Test-Path $jarPath)) {
+    Write-Host "Dang bien dich va dong goi backend..." -ForegroundColor Cyan
+    cmd /c ".\mvnw.cmd package -DskipTests"
 }
-$paymentMavenRepo = Join-Path $env:USERPROFILE '.m2\repository'
-& "$PSScriptRoot\mvn.ps1" -MavenArgs @("-Dmaven.repo.local=$paymentMavenRepo", 'spring-boot:run')
+
+Write-Host "Khoi dong PhongTroBackendApplication..." -ForegroundColor Green
+& java -jar ".\target\smart-rental-backend-0.0.1-SNAPSHOT.jar"

@@ -1,0 +1,379 @@
+/* Contract PDF Modal & Print Styles */
+
+.contract-pdf-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.contract-pdf-modal {
+  background: #f1f5f9;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  margin: auto;
+}
+
+.contract-pdf-toolbar {
+  background: #ffffff;
+  padding: 14px 24px;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.contract-pdf-title-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.contract-pdf-title-info h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.contract-pdf-status-tag {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 9999px;
+}
+
+.contract-pdf-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.contract-pdf-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.contract-pdf-btn:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.contract-pdf-btn-primary {
+  background: #167c5a;
+  border-color: #167c5a;
+  color: #ffffff;
+}
+
+.contract-pdf-btn-primary:hover {
+  background: #106a4c;
+  border-color: #106a4c;
+}
+
+.contract-pdf-scroll-container {
+  padding: 30px 20px;
+  display: flex;
+  justify-content: center;
+  overflow-x: auto;
+  background: #64748b;
+}
+
+/* Authentic A4 Paper styling */
+.contract-a4-page {
+  background: #ffffff;
+  width: 100%;
+  max-width: 794px; /* A4 width at 96 DPI */
+  min-height: 1123px; /* A4 height at 96 DPI */
+  padding: 48px 54px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  color: #1e293b;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 14px;
+  line-height: 1.5;
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* Legal Header */
+.contract-legal-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.national-motto-country {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.national-motto-independence {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.national-motto-divider {
+  width: 160px;
+  height: 1px;
+  background: #334155;
+  margin: 0 auto 16px;
+}
+
+.contract-document-title {
+  font-size: 20px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #0f172a;
+  margin: 16px 0 4px;
+}
+
+.contract-document-code {
+  font-size: 13px;
+  font-style: italic;
+  color: #475569;
+  margin-bottom: 12px;
+}
+
+.contract-preamble {
+  font-style: italic;
+  font-size: 13px;
+  margin-bottom: 16px;
+  text-align: justify;
+}
+
+/* Sections & Clauses */
+.contract-section {
+  margin-bottom: 16px;
+}
+
+.contract-section-heading {
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  color: #0f172a;
+}
+
+.contract-parties-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+.contract-party-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 12px 14px;
+  font-size: 13px;
+}
+
+.contract-party-role {
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 12px;
+  color: #167c5a;
+  margin-bottom: 6px;
+}
+
+.contract-party-box p {
+  margin: 4px 0;
+}
+
+/* Table of financial details */
+.contract-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0 16px;
+  font-size: 13px;
+}
+
+.contract-table th,
+.contract-table td {
+  border: 1px solid #cbd5e1;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.contract-table th {
+  background: #f1f5f9;
+  font-weight: 700;
+}
+
+.contract-clause-item {
+  margin-bottom: 8px;
+  text-align: justify;
+}
+
+.contract-clause-title {
+  font-weight: 700;
+}
+
+/* Digital Signature Stamps Box */
+.contract-signatures-container {
+  margin-top: 30px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  page-break-inside: avoid;
+}
+
+.contract-signature-column {
+  text-align: center;
+}
+
+.signature-role-title {
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.signature-role-subtitle {
+  font-size: 12px;
+  font-style: italic;
+  color: #64748b;
+  margin-bottom: 14px;
+}
+
+/* Official VNPT SmartCA digital stamp seal */
+.vnpt-smartca-stamp {
+  border: 2px solid #dc2626; /* Con dấu đỏ truyền thống pháp lý */
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: rgba(254, 242, 242, 0.6);
+  text-align: left;
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  line-height: 1.4;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.1);
+}
+
+.vnpt-stamp-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #dc2626;
+  font-weight: 800;
+  font-size: 12px;
+  border-bottom: 1px dashed #f87171;
+  padding-bottom: 4px;
+  margin-bottom: 6px;
+}
+
+.vnpt-stamp-signer {
+  font-weight: 700;
+  color: #991b1b;
+  font-size: 12px;
+  margin-bottom: 2px;
+}
+
+.vnpt-stamp-detail {
+  color: #4b5563;
+  margin: 1px 0;
+}
+
+.vnpt-stamp-footer {
+  font-weight: 700;
+  font-size: 10px;
+  color: #16a34a;
+  margin-top: 6px;
+  padding-top: 4px;
+  border-top: 1px dashed #f87171;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.unsigned-stamp-placeholder {
+  border: 2px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 30px 15px;
+  color: #94a3b8;
+  font-style: italic;
+  font-size: 12px;
+  background: #f8fafc;
+}
+
+/* PRINT MEDIA STYLES - Direct print to A4 */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .contract-pdf-overlay {
+    position: static;
+    background: transparent;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .contract-pdf-modal {
+    box-shadow: none;
+    background: transparent;
+    max-width: 100%;
+  }
+
+  .contract-pdf-toolbar {
+    display: none !important;
+  }
+
+  .contract-pdf-scroll-container {
+    background: transparent;
+    padding: 0;
+    overflow: visible;
+  }
+
+  #contract-pdf-render-area,
+  #contract-pdf-render-area * {
+    visibility: visible;
+  }
+
+  #contract-pdf-render-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 15mm 20mm;
+    box-shadow: none;
+    border: none;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+}

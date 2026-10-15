@@ -77,3 +77,13 @@ app:
     ipn-url: ${VNPAY_IPN_URL:}
     query-url: ${VNPAY_QUERY_URL:https://sandbox.vnpayment.vn/merchant_webapi/api/transaction}
     query-ip: ${VNPAY_QUERY_IP:127.0.0.1}
+
+  vnpt-smartca:
+    base-url: ${VNPT_SMARTCA_BASE_URL:https://rmgateway.vnptit.vn/sca/sp769}
+    auth-url: ${VNPT_SMARTCA_AUTH_URL:https://rmgateway-mobile.vnptit.vn/auth/token}
+    partner-init-url: ${VNPT_SMARTCA_PARTNER_INIT_URL:https://rmgateway.vnptit.vn/vi/thirdpartyapi/sdk/partner_init}
+    client-id: ${VNPT_SMARTCA_CLIENT_ID:44a6-639267272520259699.apps.smartcaapi.com}
+    client-secret: ${VNPT_SMARTCA_CLIENT_SECRET:M2FkN2Q5NGQ-NjQ5Ni00NGE2}
+    sp-id: ${VNPT_SMARTCA_SP_ID:44a6-639267272520259699.apps.smartcaapi.com}
+    sp-password: ${VNPT_SMARTCA_SP_PASSWORD:M2FkN2Q5NGQ-NjQ5Ni00NGE2}
+    sandbox-mode: ${VNPT_SMARTCA_SANDBOX_MODE:true}

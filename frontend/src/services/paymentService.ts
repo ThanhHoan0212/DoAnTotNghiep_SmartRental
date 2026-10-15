@@ -20,4 +20,10 @@ export const paymentService = {
   async status(reference: string): Promise<VnpayPayment> {
     return (await api.get<VnpayPayment>(`/payments/vnpay/${encodeURIComponent(reference)}`)).data;
   },
+  async processReturn(fields: Record<string, string>): Promise<VnpayPayment> {
+    return (await api.post<VnpayPayment>('/payments/vnpay/return', fields)).data;
+  },
+  async confirmSandbox(reference: string): Promise<VnpayPayment> {
+    return (await api.post<VnpayPayment>(`/payments/vnpay/${encodeURIComponent(reference)}/sandbox-confirm`)).data;
+  },
 };

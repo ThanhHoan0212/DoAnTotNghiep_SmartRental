@@ -3,15 +3,14 @@ param(
     [string[]]$MavenArgs
 )
 
-$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$mavenHome = Join-Path $scriptDir ".maven\apache-maven-3.9.6"
-$classworldsConf = Join-Path $mavenHome "bin\m2.conf"
-$bootClasspath = Join-Path $mavenHome "boot\*"
+$wrapperJar = ".\.mvn\wrapper\maven-wrapper.jar"
+if (-not (Test-Path $wrapperJar)) {
+    $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+    $wrapperJar = Join-Path $scriptDir ".mvn\wrapper\maven-wrapper.jar"
+}
 
-& java -cp $bootClasspath `
-    "-Dclassworlds.conf=$classworldsConf" `
-    "-Dmaven.home=$mavenHome" `
-    "-Dmaven.multiModuleProjectDirectory=$scriptDir" `
-    org.codehaus.plexus.classworlds.launcher.Launcher `
+& java "-Dmaven.multiModuleProjectDirectory=." `
+    -cp $wrapperJar `
+    org.apache.maven.wrapper.MavenWrapperMain `
     @MavenArgs
 exit $LASTEXITCODE

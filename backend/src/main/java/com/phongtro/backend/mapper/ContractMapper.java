@@ -34,6 +34,12 @@ public class ContractMapper {
                 .landlordSignedAt(contract.getLandlordSignedAt())
                 .activatedAt(contract.getActivatedAt())
                 .documentContent(contract.getDocumentContent())
+                .tenantSignature(contract.getTenantSignature())
+                .landlordSignature(contract.getLandlordSignature())
+                .tenantSignTxnId(contract.getTenantSignTxnId())
+                .landlordSignTxnId(contract.getLandlordSignTxnId())
+                .tenantCertSerial(contract.getTenantCertSerial())
+                .landlordCertSerial(contract.getLandlordCertSerial())
                 .contractCode(contract.getContractCode())
                 // Room info
                 .roomId(contract.getRoom() != null ? contract.getRoom().getId() : null)

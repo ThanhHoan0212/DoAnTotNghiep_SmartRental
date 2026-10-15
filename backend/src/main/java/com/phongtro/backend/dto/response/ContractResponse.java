@@ -31,6 +31,12 @@ public class ContractResponse {
     private java.time.Instant activatedAt;
 
     private String documentContent;
+    private String tenantSignature;
+    private String landlordSignature;
+    private String tenantSignTxnId;
+    private String landlordSignTxnId;
+    private String tenantCertSerial;
+    private String landlordCertSerial;
 
 
     @Schema(description = "ID hợp đồng")

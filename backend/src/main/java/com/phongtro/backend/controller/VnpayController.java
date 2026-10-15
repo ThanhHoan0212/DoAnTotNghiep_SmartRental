@@ -57,6 +57,26 @@ public class VnpayController {
         );
     }
 
+    @PostMapping("/api/v1/payments/vnpay/return")
+    @PreAuthorize("isAuthenticated()")
+    public ApiResponse<VnpayService.PaymentView> processReturn(
+            @RequestBody Map<String, String> fields,
+            Authentication auth) {
+        return ApiResponse.success(
+                service.processReturn(fields, auth.getName())
+        );
+    }
+
+    @PostMapping("/api/v1/payments/vnpay/{reference}/sandbox-confirm")
+    @PreAuthorize("isAuthenticated()")
+    public ApiResponse<VnpayService.PaymentView> confirmSandbox(
+            @PathVariable String reference,
+            Authentication auth) {
+        return ApiResponse.success(
+                service.confirmSandbox(reference, auth.getName())
+        );
+    }
+
     @GetMapping({
             "/api/payments/vnpay/ipn",
             "/api/v1/payments/vnpay/ipn"

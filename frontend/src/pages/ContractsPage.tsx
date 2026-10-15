@@ -16,6 +16,8 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { contractService } from '../services/contractService';
 import ContractDetailDialog from '../components/ContractDetailDialog';
+import SmartCaSignModal from '../components/SmartCaSignModal';
+import ContractPdfModal from '../components/ContractPdfModal';
 import type { Contract, ContractStatus } from '../types/contract';
 
 export default function ContractsPage() {
@@ -51,6 +53,8 @@ export default function ContractsPage() {
 
   const [now, setNow] = useState(() => Date.now());
   const [notice, setNotice] = useState<string | null>(null);
+  const [smartCaTarget, setSmartCaTarget] = useState<Contract | null>(null);
+  const [pdfTarget, setPdfTarget] = useState<Contract | null>(null);
   const loadContracts = useCallback(async (background = false) => {
     const sequence = ++loadSequence.current;
     if (!background) setIsLoading(true);
@@ -138,10 +142,7 @@ export default function ContractsPage() {
         window.location.assign(payment.paymentUrl);
         return;
       }
-      const updated = await contractService.simulateSignature(contract.id);
-      applyUpdate(updated);
-      setNotice('Đã ghi nhận chữ ký của bạn.');
-      await loadContracts(true);
+      setSmartCaTarget(contract);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Không thể thực hiện thao tác .');
       await loadContracts();
@@ -518,7 +519,7 @@ export default function ContractsPage() {
                     {contract.status === 'AWAITING_DEPOSIT' && contract.depositDeadline && <p>Hạn thanh toán cọc: {new Date(contract.depositDeadline).toLocaleString('vi-VN')}. Hết hạn sẽ giải phóng phòng.</p>}
                     {contract.depositPaidAt && <p>Đã xác nhận thanh toán: {new Date(contract.depositPaidAt).toLocaleString('vi-VN')} · {contract.paymentReference}</p>}
                     {contract.formalizedAt && <p>Hợp đồng được tạo: {new Date(contract.formalizedAt).toLocaleString('vi-VN')}</p>}
-                    {contract.documentContent && <p>Người thuê: {contract.tenantSignedAt ? 'Đã ký giả lập' : 'Chưa ký'} · Chủ phòng: {contract.landlordSignedAt ? 'Đã ký giả lập' : 'Chưa ký'}</p>}
+                    {contract.documentContent && <p>Người thuê: {contract.tenantSignedAt ? '✓ Đã ký số VNPT SmartCA' : 'Chưa ký'} · Chủ phòng: {contract.landlordSignedAt ? '✓ Đã ký số VNPT SmartCA' : 'Chưa ký'}</p>}
                     {contract.closureRequests?.some(r => r.status === 'PENDING') && <p style={{ color: '#b45309', fontWeight: 600 }}>Có yêu cầu hủy / chấm dứt đang chờ bên còn lại xác nhận. Xem chi tiết để phản hồi.</p>}
                     {contract.agreedEndDate && <p>Ngày chấm dứt đã thống nhất: <strong>{new Date(contract.agreedEndDate).toLocaleDateString('vi-VN')}</strong>{contract.status === 'ACTIVE' ? ' · Hợp đồng vẫn đang có hiệu lực.' : ''}</p>}
                     {contract.activatedAt && <p>Có hiệu lực từ: {new Date(contract.activatedAt).toLocaleString('vi-VN')}</p>}
@@ -529,10 +530,36 @@ export default function ContractsPage() {
                       <button className="btn btn-primary" disabled={isProcessingAction || Boolean(contract.depositDeadline && new Date(contract.depositDeadline).getTime() <= now)}
                         onClick={() => handleSimulation(contract, 'deposit')}>Thanh toán cọc qua VNPAY</button>
                     )}
+                    {contract.status === 'AWAITING_SIGNATURES' && contract.depositPaidAt && (
+                      (user?.id === contract.tenantId && !contract.tenantSignedAt) ||
+                      (user?.id === contract.landlordId && !contract.landlordSignedAt)
+                    ) && (
+                      <button
+                        type="button"
+                        className="btn btn-primary"
+                        style={{ background: 'linear-gradient(135deg, #0056b3 0%, #0077e6 100%)', borderColor: '#0056b3', fontSize: '13px' }}
+                        onClick={() => setSmartCaTarget(contract)}
+                        disabled={isProcessingAction}
+                      >
+                        <ShieldCheck size={15} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
+                        Ký số VNPT SmartCA
+                      </button>
+                    )}
                     {(
                       <button className="btn btn-outline" disabled={isProcessingAction}
                         onClick={() => { setDocumentTarget(contract); setAcceptedDocument(false); }}>Xem chi tiết hợp đồng</button>
                     )}
+                    <button
+                      type="button"
+                      className="btn btn-outline"
+                      style={{ fontSize: '13px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                      disabled={isProcessingAction}
+                      onClick={() => setPdfTarget(contract)}
+                      title="Xem định dạng A4 và tải file PDF"
+                    >
+                      <FileText size={15} />
+                      Xem & Tải PDF
+                    </button>
                     {/* Đối với Chủ nhà khi có yêu cầu PENDING */}
                     {(activeTab === 'landlord' || activeTab === 'admin') && contract.status === 'PENDING' && (
                       <>
@@ -623,8 +650,30 @@ export default function ContractsPage() {
             onBusy={setIsProcessingAction} onUpdated={applyUpdate}
             busy={isProcessingAction} accepted={acceptedDocument} onAccept={setAcceptedDocument}
             onClose={() => { setDocumentTarget(null); setAcceptedDocument(false); }}
-            onSign={() => handleSimulation(documentTarget, 'signature')}
+            onSign={() => setSmartCaTarget(documentTarget)}
             statusBadge={renderStatusBadge(documentTarget.status)} />
+        )}
+
+        {smartCaTarget && (
+          <SmartCaSignModal
+            contract={smartCaTarget}
+            userCccd={user?.idCardNumber}
+            userName={user?.fullName}
+            userRole={user?.id === smartCaTarget.tenantId ? 'TENANT' : 'LANDLORD'}
+            onSuccess={(updated) => {
+              applyUpdate(updated);
+              setNotice('Ký số hợp đồng qua VNPT SmartCA thành công!');
+              loadContracts(true);
+            }}
+            onClose={() => setSmartCaTarget(null)}
+          />
+        )}
+
+        {pdfTarget && (
+          <ContractPdfModal
+            contract={pdfTarget}
+            onClose={() => setPdfTarget(null)}
+          />
         )}
         {/* Modal nhập lý do Từ chối / Hủy / Thanh lý */}
         {actionTarget && (

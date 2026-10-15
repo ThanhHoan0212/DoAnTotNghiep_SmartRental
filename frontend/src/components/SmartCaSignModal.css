@@ -1,0 +1,398 @@
+/* VNPT SmartCA Signing Modal Styles */
+.smartca-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  padding: 16px;
+  animation: smartcaFadeIn 0.2s ease-out;
+}
+
+@keyframes smartcaFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.smartca-modal {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 25px 50px -12px rgba(0, 102, 204, 0.25), 0 0 0 1px rgba(226, 232, 240, 0.8);
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: smartcaSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes smartcaSlideUp {
+  from { transform: translateY(20px) scale(0.98); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.smartca-header {
+  background: linear-gradient(135deg, #0056b3 0%, #0077e6 50%, #0284c7 100%);
+  color: #ffffff;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+.smartca-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.smartca-logo-badge {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  padding: 8px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.smartca-title-group h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.smartca-title-group span {
+  font-size: 12px;
+  opacity: 0.9;
+  display: block;
+  margin-top: 2px;
+}
+
+.smartca-close-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: #ffffff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.smartca-close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(90deg);
+}
+
+.smartca-body {
+  padding: 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Steps progress bar */
+.smartca-steps {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.smartca-steps::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 30px;
+  right: 30px;
+  height: 2px;
+  background: #e2e8f0;
+  z-index: 1;
+  transform: translateY(-50%);
+}
+
+.smartca-step-item {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.smartca-step-num {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  border: 2px solid #e2e8f0;
+  transition: all 0.2s;
+}
+
+.smartca-step-item.active .smartca-step-num {
+  background: #0066cc;
+  color: #ffffff;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.15);
+}
+
+.smartca-step-item.completed .smartca-step-num {
+  background: #16a34a;
+  color: #ffffff;
+  border-color: #16a34a;
+}
+
+.smartca-step-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.smartca-step-item.active .smartca-step-label {
+  color: #0066cc;
+}
+
+/* Info Cards */
+.smartca-info-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.smartca-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 13px;
+}
+
+.smartca-info-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.smartca-info-label {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.smartca-info-value {
+  color: #0f172a;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.smartca-hash-box {
+  background: #f1f5f9;
+  border: 1px dashed #cbd5e1;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 11px;
+  word-break: break-all;
+  color: #334155;
+  margin-top: 4px;
+}
+
+/* Radar & Polling indicator */
+.smartca-radar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 20px 10px;
+  gap: 14px;
+}
+
+.smartca-radar {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(0, 102, 204, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0066cc;
+}
+
+.smartca-radar::before,
+.smartca-radar::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 102, 204, 0.4);
+  animation: smartcaPulse 2s infinite cubic-bezier(0, 0, 0.2, 1);
+}
+
+.smartca-radar::after {
+  inset: -14px;
+  animation-delay: 0.5s;
+}
+
+@keyframes smartcaPulse {
+  0% { transform: scale(0.9); opacity: 1; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+.smartca-radar-text h4 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  color: #0f172a;
+}
+
+.smartca-radar-text p {
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+  max-width: 420px;
+  line-height: 1.5;
+}
+
+/* Tabs */
+.smartca-tabs {
+  display: flex;
+  border-bottom: 2px solid #e2e8f0;
+  gap: 16px;
+}
+
+.smartca-tab-btn {
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.smartca-tab-btn.active {
+  color: #0066cc;
+  border-bottom-color: #0066cc;
+}
+
+/* Form inputs */
+.smartca-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.smartca-input-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.smartca-input {
+  padding: 10px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.smartca-input:focus {
+  border-color: #0066cc;
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.15);
+}
+
+/* Success Card */
+.smartca-success-card {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.smartca-success-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #dcfce7;
+  color: #16a34a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.smartca-success-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #166534;
+  margin: 0;
+}
+
+.smartca-stamp-preview {
+  background: #ffffff;
+  border: 1px dashed #86efac;
+  border-radius: 8px;
+  padding: 12px;
+  text-align: left;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #1e293b;
+  width: 100%;
+}
+
+/* Modal Footer */
+.smartca-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+}
+
+.smartca-sandbox-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #b45309;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.smartca-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}

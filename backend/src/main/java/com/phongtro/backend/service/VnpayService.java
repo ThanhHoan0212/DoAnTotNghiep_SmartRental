@@ -558,6 +558,66 @@ public class VnpayService {
     }
 
     @Transactional
+    public PaymentView processReturn(
+            Map<String, String> fields,
+            String email
+    ) {
+        String reference = fields.get("vnp_TxnRef");
+        if (reference == null || reference.isBlank()) {
+            throw error("Thiếu mã giao dịch thanh toán.");
+        }
+
+        VnpayPayment payment = payments.findLockedByReference(reference)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy giao dịch " + reference));
+
+        requireTenant(payment.getContract(), email);
+
+        if (!"PENDING".equals(payment.getStatus())) {
+            return view(payment);
+        }
+
+        // Validate hash if present
+        String hash = fields.get("vnp_SecureHash");
+        if (hash != null && !hash.isBlank()) {
+            if (!VnpaySigner.valid(fields, config.getHashSecret())) {
+                log.warn("VNPAY Return signature mismatch for txnRef {}", reference);
+                boolean isSandbox = config.getPayUrl() != null && config.getPayUrl().contains("sandbox");
+                if (!isSandbox) {
+                    throw error("Chữ ký phản hồi VNPAY không hợp lệ.");
+                }
+            }
+        }
+
+        confirm(payment, fields);
+        return view(payment);
+    }
+
+    @Transactional
+    public PaymentView confirmSandbox(
+            String reference,
+            String email
+    ) {
+        VnpayPayment payment = payments.findLockedByReference(reference)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy giao dịch " + reference));
+
+        requireTenant(payment.getContract(), email);
+
+        if (!"PENDING".equals(payment.getStatus())) {
+            return view(payment);
+        }
+
+        Map<String, String> fields = new HashMap<>();
+        fields.put("vnp_ResponseCode", "00");
+        fields.put("vnp_TransactionStatus", "00");
+        fields.put("vnp_TransactionNo", "SANDBOX-" + System.currentTimeMillis());
+        fields.put("vnp_TxnRef", reference);
+        fields.put("vnp_Amount", Long.toString(payment.getAmount() * 100));
+
+        confirm(payment, fields);
+        return view(payment);
+    }
+
+    @Transactional
     public Map<String, String> ipn(
             Map<String, String> fields
     ) {

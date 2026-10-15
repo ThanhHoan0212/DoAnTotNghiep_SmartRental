@@ -39,6 +39,12 @@ export interface Contract {
   landlordSignedAt?: string;
   activatedAt?: string;
   documentContent?: string;
+  tenantSignature?: string;
+  landlordSignature?: string;
+  tenantSignTxnId?: string;
+  landlordSignTxnId?: string;
+  tenantCertSerial?: string;
+  landlordCertSerial?: string;
   id: string;
   contractCode?: string;
   contractNumber?: string;
