@@ -250,26 +250,29 @@ export default function ContractsPage() {
   };
 
   return (
-    <main className="page contracts-page" style={{ background: '#f8fafc', minHeight: 'calc(100vh - 72px)', padding: '32px 0 60px' }}>
+    <main className="page contracts-page" style={{ background: '#f5f7f4', minHeight: 'calc(100vh - 72px)', padding: '32px 0 60px' }}>
       <div className="container">
         {/* Page Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
           <div>
-            <h1 style={{ margin: '0 0 6px', fontSize: '26px', color: '#0f172a', fontWeight: 800 }}>
+            <h1 style={{ margin: '0 0 6px', fontSize: '26px', color: '#233c2e', fontWeight: 800 }}>
               Quản lý hợp đồng thuê phòng
             </h1>
-            <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>
+            <p style={{ margin: 0, color: '#738174', fontSize: '14px' }}>
               Yêu cầu thuê → Chấp nhận → Thanh toán cọc → Tạo hợp đồng → Hai bên ký → Có hiệu lực.
             </p>
           </div>
 
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+          <Link to="/support" className="btn btn-outline">Kết quả khiếu nại & hỗ trợ của tôi</Link>
           <Link to="/rooms" className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Building size={16} />
             Tìm thêm phòng mới
           </Link>
+          </div>
         </div>
 
-        <p style={{ fontSize: 12, color: '#64748b' }}></p>
+        <p style={{ fontSize: 12, color: '#738174' }}></p>
         {notice && <div role="status" style={{ padding: 14, background: '#ecfdf5', color: '#065f46', borderRadius: 10, marginBottom: 16 }}>{notice}</div>}
         {/* Tabs: Tenant vs Landlord */}
         <div className="contract-tabs">
@@ -335,7 +338,7 @@ export default function ContractsPage() {
               style={{
                 padding: '6px 12px',
                 borderRadius: '9999px',
-                border: selectedStatus === item.key ? '1px solid #167c5a' : '1px solid #cbd5e1',
+                border: selectedStatus === item.key ? '1px solid #167c5a' : '1px solid #d5dfd3',
                 background: selectedStatus === item.key ? '#ecfdf5' : '#ffffff',
                 color: selectedStatus === item.key ? '#065f46' : '#475569',
                 cursor: 'pointer',
@@ -349,7 +352,7 @@ export default function ContractsPage() {
 
         {/* Loading State */}
         {isLoading && (
-          <div style={{ textAlign: 'center', padding: '60px 0', color: '#64748b' }}>
+          <div style={{ textAlign: 'center', padding: '60px 0', color: '#738174' }}>
             <p>Đang tải danh sách hợp đồng...</p>
           </div>
         )}
@@ -376,7 +379,7 @@ export default function ContractsPage() {
             style={{
               background: '#ffffff',
               borderRadius: '16px',
-              border: '1px solid #e2e8f0',
+              border: '1px solid #dde5dc',
               padding: '60px 24px',
               textAlign: 'center',
             }}
@@ -389,7 +392,7 @@ export default function ContractsPage() {
                   : 'Chưa có yêu cầu thuê phòng nào gửi tới bạn'
                 : 'Không có hợp đồng nào với trạng thái đã chọn'}
             </h3>
-            <p style={{ color: '#64748b', fontSize: '14px', maxWidth: '460px', margin: '0 auto 20px' }}>
+            <p style={{ color: '#738174', fontSize: '14px', maxWidth: '460px', margin: '0 auto 20px' }}>
               {activeTab === 'tenant'
                 ? 'Hãy khám phá danh sách phòng trọ đã được kiểm duyệt tại TP. Hồ Chí Minh và gửi yêu cầu thuê ngay.'
                 : 'Các yêu cầu đặt cọc & thuê phòng từ khách hàng sẽ hiển thị tại đây khi có người quan tâm.'}
@@ -432,7 +435,7 @@ export default function ContractsPage() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                       <span className="contract-code">{code}</span>
                       {renderStatusBadge(contract.status)}
-                      <span style={{ fontSize: '12px', color: '#64748b' }}>
+                      <span style={{ fontSize: '12px', color: '#738174' }}>
                         Tạo ngày {new Date(contract.createdAt).toLocaleDateString('vi-VN')}
                       </span>
                     </div>
@@ -458,11 +461,11 @@ export default function ContractsPage() {
                   <div className="contract-card-body">
                     {/* Cột trái: Thông tin phòng & Đối tác */}
                     <div>
-                      <h4 style={{ margin: '0 0 6px', fontSize: '16px', color: '#0f172a' }}>
+                      <h4 style={{ margin: '0 0 6px', fontSize: '16px', color: '#233c2e' }}>
                         {roomTitle}
                       </h4>
                       {fullAddress && (
-                        <p style={{ margin: '0 0 14px', fontSize: '13px', color: '#64748b' }}>
+                        <p style={{ margin: '0 0 14px', fontSize: '13px', color: '#738174' }}>
                           {fullAddress}
                         </p>
                       )}
@@ -473,8 +476,8 @@ export default function ContractsPage() {
                       )}
                       <div className="contract-parties">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ color: '#64748b' }}>{otherPartyRole}:</span>
-                          <strong style={{ color: '#0f172a' }}>{otherPartyName}</strong>
+                          <span style={{ color: '#738174' }}>{otherPartyRole}:</span>
+                          <strong style={{ color: '#233c2e' }}>{otherPartyName}</strong>
                         </div>
                         {otherPartyPhone && (
                           <div style={{ color: '#475569' }}>
@@ -490,7 +493,7 @@ export default function ContractsPage() {
 
                       {/* Ghi chú hoặc lý do hủy nếu có */}
                       {contract.terms && (
-                        <div style={{ marginTop: '12px', fontSize: '12px', background: '#f8fafc', padding: '8px 12px', borderRadius: '6px', border: '1px solid #f1f5f9' }}>
+                        <div style={{ marginTop: '12px', fontSize: '12px', background: '#f5f7f4', padding: '8px 12px', borderRadius: '6px', border: '1px solid #f1f5f9' }}>
                           <strong style={{ color: '#334155' }}>Ghi chú gửi kèm:</strong> {contract.terms}
                         </div>
                       )}
@@ -526,7 +529,7 @@ export default function ContractsPage() {
                     </div>
                   </div>
 
-                  <div style={{ padding: '12px 20px', background: '#f8fafc', fontSize: '13px' }}>
+                  <div style={{ padding: '12px 20px', background: '#f5f7f4', fontSize: '13px' }}>
                     {contract.requestCode && <p>Mã yêu cầu: {contract.requestCode}</p>}
                     {contract.status === 'AWAITING_DEPOSIT' && contract.depositDeadline && <p>Hạn thanh toán cọc: {new Date(contract.depositDeadline).toLocaleString('vi-VN')}. Hết hạn sẽ giải phóng phòng.</p>}
                     {contract.depositPaidAt && <p>Đã xác nhận thanh toán: {new Date(contract.depositPaidAt).toLocaleString('vi-VN')} · {contract.paymentReference}</p>}
@@ -702,7 +705,7 @@ export default function ContractsPage() {
                   <p style={{ margin: '0 0 12px', fontSize: '14px', color: '#475569' }}>
                     Mã hợp đồng: <strong>{actionTarget.contract.contractCode || actionTarget.contract.contractNumber || actionTarget.contract.id.slice(0, 8)}</strong>
                   </p>
-                  <p style={{ margin: '0 0 16px', fontSize: '13px', color: '#64748b' }}>
+                  <p style={{ margin: '0 0 16px', fontSize: '13px', color: '#738174' }}>
                     Phòng trọ: {actionTarget.contract.roomTitle || actionTarget.contract.room?.title || 'Phòng trọ'}
                   </p>
 
@@ -718,7 +721,7 @@ export default function ContractsPage() {
                     style={{
                       width: '100%',
                       padding: '10px 12px',
-                      border: '1px solid #cbd5e1',
+                      border: '1px solid #d5dfd3',
                       borderRadius: '8px',
                       fontSize: '13px',
                       fontFamily: 'inherit',

@@ -106,10 +106,10 @@ export default function ProfilePage() {
   const roleInfo = getRoleBadge(user?.role);
 
   return (
-    <main className="page" style={{ padding: '40px 0', minHeight: '80vh' }}>
+    <main className="page profile-page" style={{ padding: '40px 0', minHeight: '80vh' }}>
       <div className="container" style={{ maxWidth: '800px', margin: '0 auto' }}>
         {/* Header Hồ Sơ */}
-        <div style={{
+        <div className="profile-identity-card" style={{
           display: 'flex',
           alignItems: 'center',
           gap: '24px',
@@ -185,17 +185,17 @@ export default function ProfilePage() {
                 </Link>
               )}
             </div>
-            <p style={{ margin: '6px 0 0 0', color: '#64748b', fontSize: '14px' }}>
+            <p style={{ margin: '6px 0 0 0', color: '#738174', fontSize: '14px' }}>
               {user?.email} • Tham gia từ {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('vi-VN') : 'Gần đây'}
             </p>
           </div>
         </div>
 
         {/* Tab chuyển đổi */}
-        <div style={{
+        <div className="profile-tabs" style={{
           display: 'flex',
           gap: '12px',
-          borderBottom: '2px solid #e2e8f0',
+          borderBottom: '2px solid #dde5dc',
           marginBottom: '28px'
         }}>
           <button
@@ -208,7 +208,7 @@ export default function ProfilePage() {
               border: 'none',
               background: 'none',
               borderBottom: activeTab === 'info' ? '3px solid #167c5a' : '3px solid transparent',
-              color: activeTab === 'info' ? '#167c5a' : '#64748b',
+              color: activeTab === 'info' ? '#167c5a' : '#738174',
               cursor: 'pointer',
               marginBottom: '-2px'
             }}
@@ -226,7 +226,7 @@ export default function ProfilePage() {
               border: 'none',
               background: 'none',
               borderBottom: activeTab === 'password' ? '3px solid #167c5a' : '3px solid transparent',
-              color: activeTab === 'password' ? '#167c5a' : '#64748b',
+              color: activeTab === 'password' ? '#167c5a' : '#738174',
               cursor: 'pointer',
               marginBottom: '-2px'
             }}
@@ -337,9 +337,9 @@ export default function ProfilePage() {
                     width: '100%',
                     padding: '12px',
                     borderRadius: '8px',
-                    border: '1px solid #e2e8f0',
+                    border: '1px solid #dde5dc',
                     background: '#f1f5f9',
-                    color: '#64748b'
+                    color: '#738174'
                   }}
                 />
               </div>
@@ -358,7 +358,7 @@ export default function ProfilePage() {
                     width: '100%',
                     padding: '12px',
                     borderRadius: '8px',
-                    border: '1px solid #cbd5e1'
+                    border: '1px solid #d5dfd3'
                   }}
                 />
               </div>
@@ -376,7 +376,7 @@ export default function ProfilePage() {
                     width: '100%',
                     padding: '12px',
                     borderRadius: '8px',
-                    border: '1px solid #cbd5e1'
+                    border: '1px solid #d5dfd3'
                   }}
                 />
               </div>
@@ -394,7 +394,7 @@ export default function ProfilePage() {
                     width: '100%',
                     padding: '12px',
                     borderRadius: '8px',
-                    border: '1px solid #cbd5e1'
+                    border: '1px solid #d5dfd3'
                   }}
                 />
               </div>
@@ -448,7 +448,7 @@ export default function ProfilePage() {
                     width: '100%',
                     padding: '12px',
                     borderRadius: '8px',
-                    border: '1px solid #cbd5e1'
+                    border: '1px solid #d5dfd3'
                   }}
                 />
               </div>
@@ -467,7 +467,7 @@ export default function ProfilePage() {
                     width: '100%',
                     padding: '12px',
                     borderRadius: '8px',
-                    border: '1px solid #cbd5e1'
+                    border: '1px solid #d5dfd3'
                   }}
                 />
               </div>
@@ -486,7 +486,7 @@ export default function ProfilePage() {
                     width: '100%',
                     padding: '12px',
                     borderRadius: '8px',
-                    border: '1px solid #cbd5e1'
+                    border: '1px solid #d5dfd3'
                   }}
                 />
               </div>

@@ -142,12 +142,12 @@ export default function PostRoomPage() {
   };
 
   return (
-    <main className="page" style={{ padding: '40px 0', minHeight: '80vh' }}>
+    <main className="page post-room-page" style={{ padding: '40px 0', minHeight: '80vh' }}>
       <div className="container" style={{ maxWidth: '840px', margin: '0 auto' }}>
         <div style={{ marginBottom: '28px' }}>
           <span className="section-label">Dành cho chủ nhà</span>
           <h1 style={{ fontSize: '28px', fontWeight: 700, margin: '8px 0' }}>Đăng tin cho thuê phòng trọ</h1>
-          <p style={{ color: '#64748b' }}>Điền đầy đủ thông tin để phòng của bạn tiếp cận hàng ngàn người thuê nhanh chóng.</p>
+          <p style={{ color: '#738174' }}>Điền đầy đủ thông tin để phòng của bạn tiếp cận hàng ngàn người thuê nhanh chóng.</p>
         </div>
 
         {!isVerified && (
@@ -211,7 +211,7 @@ export default function PostRoomPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ background: '#fff', padding: '32px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+        <form className="sr-form-panel" onSubmit={handleSubmit} style={{ background: '#fff', padding: '32px', borderRadius: '12px', border: '1px solid #dde5dc' }}>
           {/* Thông tin cơ bản */}
           <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '16px', color: '#167c5a' }}>
             1. Thông tin cơ bản
@@ -227,11 +227,11 @@ export default function PostRoomPage() {
               onChange={(e) => setTitle(e.target.value)}
               placeholder="VD: Phòng khép kín full đồ ban công thoáng gần ĐH Quốc Gia"
               required
-              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #d5dfd3' }}
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+          <div className="sr-grid-two" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
             <div>
               <label style={{ display: 'block', fontWeight: 600, marginBottom: '6px' }}>
                 Giá thuê hàng tháng (VNĐ) *
@@ -242,7 +242,7 @@ export default function PostRoomPage() {
                 onChange={(e) => setPrice(e.target.value)}
                 placeholder="VD: 3500000"
                 required
-                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #d5dfd3' }}
               />
             </div>
 
@@ -256,7 +256,7 @@ export default function PostRoomPage() {
                 onChange={(e) => setArea(e.target.value)}
                 placeholder="VD: 25"
                 required
-                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #d5dfd3' }}
               />
             </div>
           </div>
@@ -270,7 +270,7 @@ export default function PostRoomPage() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Mô tả nội thất, giờ giấc, an ninh, tiện ích xung quanh..."
-              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontFamily: 'inherit' }}
+              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #d5dfd3', fontFamily: 'inherit' }}
             />
           </div>
 
@@ -279,7 +279,7 @@ export default function PostRoomPage() {
             2. Vị trí phòng trọ
           </h2>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+          <div className="sr-grid-two" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
             <div>
               <label style={{ display: 'block', fontWeight: 600, marginBottom: '6px' }}>
                 Quận / Huyện *
@@ -287,7 +287,7 @@ export default function PostRoomPage() {
               <select
                 value={district}
                 onChange={(e) => setDistrict(e.target.value)}
-                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #d5dfd3' }}
               >
                 {districts.map((d) => (
                   <option key={d} value={d}>{d}</option>
@@ -304,7 +304,7 @@ export default function PostRoomPage() {
                 value={ward}
                 onChange={(e) => setWard(e.target.value)}
                 placeholder="VD: Dịch Vọng Hậu"
-                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #d5dfd3' }}
               />
             </div>
           </div>
@@ -319,7 +319,7 @@ export default function PostRoomPage() {
               onChange={(e) => setAddress(e.target.value)}
               placeholder="VD: Số 18 Ngõ 175 Cầu Giấy"
               required
-              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #d5dfd3' }}
             />
           </div>
 
@@ -337,9 +337,9 @@ export default function PostRoomPage() {
                   alignItems: 'center',
                   gap: '8px',
                   padding: '10px 12px',
-                  background: selectedAmenityIds.includes(amenity.id) ? '#dcfce7' : '#f8fafc',
+                  background: selectedAmenityIds.includes(amenity.id) ? '#dcfce7' : '#f5f7f4',
                   borderRadius: '8px',
-                  border: `1px solid ${selectedAmenityIds.includes(amenity.id) ? '#86efac' : '#e2e8f0'}`,
+                  border: `1px solid ${selectedAmenityIds.includes(amenity.id) ? '#86efac' : '#dde5dc'}`,
                   cursor: 'pointer',
                   fontWeight: selectedAmenityIds.includes(amenity.id) ? 600 : 400
                 }}
@@ -366,7 +366,7 @@ export default function PostRoomPage() {
               value={imageUrlInput}
               onChange={(e) => setImageUrlInput(e.target.value)}
               placeholder="Nhập đường dẫn hình ảnh (URL)"
-              style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+              style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #d5dfd3' }}
             />
             <button
               type="button"
@@ -386,12 +386,12 @@ export default function PostRoomPage() {
                     width: '130px',
                     borderRadius: '8px',
                     overflow: 'hidden',
-                    border: img.isPrimary ? '2px solid #167c5a' : '1px solid #e2e8f0',
+                    border: img.isPrimary ? '2px solid #167c5a' : '1px solid #dde5dc',
                     position: 'relative'
                   }}
                 >
                   <img src={img.imageUrl} alt="" style={{ width: '100%', height: '90px', objectFit: 'cover' }} />
-                  <div style={{ padding: '6px', textAlign: 'center', background: '#f8fafc' }}>
+                  <div style={{ padding: '6px', textAlign: 'center', background: '#f5f7f4' }}>
                     <button
                       type="button"
                       onClick={() => setPrimaryImage(idx)}
@@ -399,7 +399,7 @@ export default function PostRoomPage() {
                         background: 'none',
                         border: 'none',
                         fontSize: '11px',
-                        color: img.isPrimary ? '#167c5a' : '#64748b',
+                        color: img.isPrimary ? '#167c5a' : '#738174',
                         fontWeight: img.isPrimary ? 700 : 400,
                         cursor: 'pointer'
                       }}

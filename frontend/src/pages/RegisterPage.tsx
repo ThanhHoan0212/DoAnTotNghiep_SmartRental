@@ -4,6 +4,8 @@ import { useAuth } from '../hooks/useAuth';
 import type { Role } from '../types/auth';
 import { ApiError } from '../services/api';
 
+import AuthIntro from '../components/AuthIntro';
+
 export default function RegisterPage() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -66,6 +68,7 @@ export default function RegisterPage() {
 
   return (
     <main className="auth-page">
+      <div className="auth-layout"><AuthIntro />
       <div className="auth-card">
         <span className="section-label">Bắt đầu</span>
 
@@ -172,6 +175,7 @@ export default function RegisterPage() {
         <p className="auth-footer">
           Đã có tài khoản? <Link to="/login">Đăng nhập</Link>
         </p>
+      </div>
       </div>
     </main>
   );

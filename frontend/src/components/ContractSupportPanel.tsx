@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import type { Complaint, ComplaintCategory } from '../services/adminService';
 import type { PageResponse } from '../services/roomService';
@@ -31,6 +32,7 @@ export default function ContractSupportPanel({ contract, onBusy }: { contract: C
       <button className="admin-primary" disabled={busy}>{busy ? 'Đang gửi…' : 'Gửi yêu cầu hỗ trợ'}</button>
     </form>
     <div className="contract-support-history"><h3>Yêu cầu hỗ trợ của tôi</h3><button type="button" disabled={loading} onClick={() => setRevision(x => x + 1)}>Làm mới phản hồi</button></div>
+    <p className="admin-note">Danh sách bên dưới chỉ gồm yêu cầu của hợp đồng này. <Link to="/support">Xem tất cả yêu cầu đã gửi, kể cả yêu cầu cũ chưa gắn hợp đồng</Link></p>
     <LoadState loading={loading} error={loadError} retry={() => setRevision(x => x + 1)} />
     {data && <>{!data.content.length && <Empty>Chưa có yêu cầu hỗ trợ cho hợp đồng này.</Empty>}{data.content.map(item => <details className="contract-support-ticket" key={item.id}><summary>{item.subject} <Badge value={item.status} /></summary><p><small>{labels[item.category]} · {date(item.createdAt)}</small></p><p className="admin-prose">{item.description}</p>{item.response ? <div className="contract-support-response"><strong>Phản hồi từ {item.handledBy}</strong><p className="admin-prose">{item.response}</p><small>Cập nhật: {date(item.updatedAt)}</small></div> : <p>Đang chờ quản trị viên tiếp nhận.</p>}</details>)}<Pager data={data} change={setPage} /></>}
   </div>;

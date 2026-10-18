@@ -55,7 +55,8 @@ async function refreshAccessToken(): Promise<string | null> {
 
 export async function request<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
+  parseResponse: (response: Response) => Promise<ApiResponse<T>> = parseApiResponse<T>
 ): Promise<ApiResponse<T>> {
   const url = endpoint.startsWith('http') ? endpoint : `${BASE_URL}${endpoint}`;
 
@@ -84,7 +85,7 @@ export async function request<T>(
       if (newToken) {
         onRefreshed(newToken);
         headers.set('Authorization', `Bearer ${newToken}`);
-        return fetch(url, { ...options, headers }).then(parseApiResponse<T>);
+        return fetch(url, { ...options, headers }).then(parseResponse);
       }
     } else {
       // Đợi refresh token hoàn tất rồi retry
@@ -93,7 +94,7 @@ export async function request<T>(
           try {
             headers.set('Authorization', `Bearer ${newToken}`);
             const retryRes = await fetch(url, { ...options, headers });
-            resolve(await parseApiResponse<T>(retryRes));
+            resolve(await parseResponse(retryRes));
           } catch (error) {
             reject(error);
           }
@@ -102,7 +103,15 @@ export async function request<T>(
     }
   }
 
-  return parseApiResponse<T>(response);
+  return parseResponse(response);
+}
+
+export async function requestBlob(endpoint: string): Promise<Blob> {
+  const response = await request<Blob>(endpoint, { method: 'GET' }, async result => {
+    if (!result.ok) return parseApiResponse<Blob>(result);
+    return { success: true, data: await result.blob(), message: '', timestamp: new Date().toISOString() };
+  });
+  return response.data;
 }
 
 export const api = {

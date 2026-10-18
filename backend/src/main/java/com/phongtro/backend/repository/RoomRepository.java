@@ -21,6 +21,9 @@ import java.util.UUID;
 @Repository
 public interface RoomRepository extends JpaRepository<Room, UUID>, JpaSpecificationExecutor<Room> {
 
+    @Query("select (count(c) > 0) from ChatConversation c where c.room.id = :roomId")
+    boolean hasChatHistory(@Param("roomId") UUID roomId);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT r FROM Room r WHERE r.id = :id")
     Optional<Room> findByIdForUpdate(@Param("id") UUID id);

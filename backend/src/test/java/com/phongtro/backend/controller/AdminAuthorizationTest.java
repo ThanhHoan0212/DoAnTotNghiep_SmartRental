@@ -44,4 +44,19 @@ class AdminAuthorizationTest {
                 .andExpect(status().isUnauthorized());
     }
 
+    @Test @WithMockUser(username = "tenant@test.local", roles = "TENANT")
+    void tenantCanFilterOwnResultsByStatusAndContract() throws Exception {
+        java.util.UUID contractId = java.util.UUID.randomUUID();
+        mvc.perform(get("/api/v1/complaints/mine")
+                .param("status", "RESOLVED").param("contractId", contractId.toString())
+                .param("email", "another@test.local"))
+                .andExpect(status().isOk());
+        org.mockito.Mockito.verify(operations).complaints(0, 10,
+                com.phongtro.backend.entity.SupportComplaint.Status.RESOLVED, "tenant@test.local", contractId);
+    }
+
+    @Test void anonymousCannotReadSupportResults() throws Exception {
+        mvc.perform(get("/api/v1/complaints/mine")).andExpect(status().isUnauthorized());
+    }
+
 }

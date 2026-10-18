@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { Building2, ChevronDown, ShieldCheck } from "lucide-react";
 
 export default function Header() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -46,15 +47,17 @@ export default function Header() {
     <header className="header">
       <div className="container header-content">
         <Link to="/" className="logo">
+          <span className="logo-mark"><Building2 size={21} /></span>
           SmartRental
         </Link>
 
         <nav className="nav">
-          <Link to="/">Trang chủ</Link>
-          <Link to="/rooms">Phòng trọ</Link>
-          {user?.role === 'ADMIN' && <Link to="/admin" style={{ color: '#167c5a', fontWeight: 700 }}>Quản trị</Link>}
-          <Link to="/favorites">Yêu thích</Link>
-          {isAuthenticated && <Link to="/contracts">Hợp đồng</Link>}
+          <NavLink to="/" end>Trang chủ</NavLink>
+          <NavLink to="/rooms">Phòng trọ</NavLink>
+          {user?.role === 'ADMIN' && <NavLink to="/admin">Quản trị</NavLink>}
+          <NavLink to="/favorites">Yêu thích</NavLink>
+          {isAuthenticated && <NavLink to="/contracts">Hợp đồng</NavLink>}
+          {isAuthenticated && <NavLink to="/chat">Tin nhắn</NavLink>}
         </nav>
 
         <div className="header-actions">
@@ -75,96 +78,22 @@ export default function Header() {
 
           {isAuthenticated && user ? (
             <div className="user-menu" ref={dropdownRef} style={{ position: "relative" }}>
-              <button
-                type="button"
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                  background: "#f8fafc",
-                  border: "1px solid #e2e8f0",
-                  padding: "6px 14px",
-                  borderRadius: "24px",
-                  cursor: "pointer",
-                }}
-              >
-                <div
-                  style={{
-                    width: "32px",
-                    height: "32px",
-                    borderRadius: "50%",
-                    background: user.avatarUrl ? `url(${user.avatarUrl}) center/cover` : "#167c5a",
-                    color: "#ffffff",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontWeight: 700,
-                    fontSize: "14px",
-                  }}
-                >
-                  {!user.avatarUrl && (user.fullName ? user.fullName[0].toUpperCase() : "U")}
-                </div>
-
-                <div style={{ textAlign: "left" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                    <div style={{ fontWeight: 600, fontSize: "14px", color: "#1b2430" }}>
-                      {user.fullName}
-                    </div>
-                    {user.isIdentityVerified ? (
-                      <span
-                        title="Đã xác thực danh tính điện tử eKYC"
-                        style={{
-                          fontSize: "10px",
-                          fontWeight: 700,
-                          background: "#ecfdf5",
-                          color: "#059669",
-                          border: "1px solid #a7f3d0",
-                          borderRadius: "4px",
-                          padding: "1px 5px",
-                        }}
-                      >
-                        ✓ eKYC
-                      </span>
-                    ) : (
-                      <span
-                        title="Chưa xác thực eKYC"
-                        style={{
-                          fontSize: "10px",
-                          fontWeight: 600,
-                          background: "#fef3c7",
-                          color: "#d97706",
-                          border: "1px solid #fde68a",
-                          borderRadius: "4px",
-                          padding: "1px 5px",
-                        }}
-                      >
-                        Chưa eKYC
-                      </span>
-                    )}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "11px",
-                      fontWeight: 600,
-                      display: "inline-block",
-                      padding: "1px 6px",
-                      borderRadius: "6px",
-                      background: roleInfo.bg,
-                      color: roleInfo.color,
-                      marginTop: "2px",
-                    }}
-                  >
-                    {roleInfo.label}
-                  </div>
-                </div>
-
-                <span style={{ fontSize: "10px", color: "#64748b", marginLeft: "4px" }}>▼</span>
+              <button type="button" className="header-account" onClick={() => setDropdownOpen(!dropdownOpen)}
+                aria-label={`Tài khoản ${user.fullName}`} aria-expanded={dropdownOpen} aria-controls="header-account-menu" title={user.fullName}>
+                <span className="header-account-avatar" style={user.avatarUrl ? { backgroundImage: `url(${user.avatarUrl})` } : undefined}>
+                  {!user.avatarUrl && (user.fullName?.[0]?.toUpperCase() || 'U')}
+                </span>
+                <span className="header-account-copy">
+                  <strong>{user.fullName}</strong>
+                  <span className="header-account-meta">{roleInfo.label}
+                    {user.isIdentityVerified && <span className="header-account-verified"><ShieldCheck size={12} />Đã xác thực</span>}
+                  </span>
+                </span>
+                <ChevronDown size={15} className={`header-account-chevron ${dropdownOpen ? 'open' : ''}`} />
               </button>
-
               {/* Dropdown Menu */}
               {dropdownOpen && (
-                <div
+                <div id="header-account-menu"
                   style={{
                     position: "absolute",
                     top: "100%",
@@ -180,6 +109,7 @@ export default function Header() {
                   }}
                 >
                   <div style={{ padding: "12px 16px", borderBottom: "1px solid #f1f5f9" }}>
+                    <strong style={{ display: "block", fontSize: 14, marginBottom: 6, overflowWrap: "anywhere" }}>{user.fullName}</strong>
                     <div style={{ fontSize: "12px", color: "#64748b" }}>Đăng nhập với email</div>
                     <div style={{ fontSize: "13px", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis" }}>
                       {user.email}

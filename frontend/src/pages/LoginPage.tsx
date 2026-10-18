@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { ApiError } from '../services/api';
+import AuthIntro from '../components/AuthIntro';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -70,6 +71,7 @@ export default function LoginPage() {
 
   return (
     <main className="auth-page">
+      <div className="auth-layout"><AuthIntro />
       <div className="auth-card">
         <span className="section-label">Chào mừng trở lại</span>
 
@@ -170,6 +172,7 @@ export default function LoginPage() {
         <p className="auth-footer">
           Chưa có tài khoản? <Link to="/register">Đăng ký</Link>
         </p>
+      </div>
       </div>
     </main>
   );

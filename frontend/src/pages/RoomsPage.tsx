@@ -257,14 +257,14 @@ export default function RoomsPage() {
     selectedAmenityIds.length;
 
   return (
-    <main className="page">
+    <main className="page rooms-page">
       <div className="container">
         {/* Header Title */}
         <div className="rooms-header" style={{ marginBottom: 20 }}>
           <div>
             <span className="section-label">Hệ thống tìm kiếm thông minh</span>
             <h1 style={{ margin: "8px 0" }}>Tìm kiếm & Lọc phòng trọ</h1>
-            <p style={{ color: "#64748b", margin: 0 }}>
+            <p style={{ color: "#738174", margin: 0 }}>
               Khám phá phòng trọ với trợ lý AI NLP bóc tách yêu cầu tự nhiên hoặc lọc theo đa tiêu chí.
             </p>
           </div>
@@ -326,7 +326,7 @@ export default function RoomsPage() {
               style={{
                 marginTop: "14px",
                 paddingTop: "12px",
-                borderTop: "1px dashed #e2e8f0",
+                borderTop: "1px dashed #dde5dc",
                 display: "flex",
                 flexWrap: "wrap",
                 alignItems: "center",
@@ -369,11 +369,11 @@ export default function RoomsPage() {
                       fontSize: "12px",
                       color: "#334155",
                       cursor: "pointer",
-                      border: "1px solid #e2e8f0",
+                      border: "1px solid #dde5dc",
                       transition: "all 0.15s ease",
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "#e2e8f0";
+                      e.currentTarget.style.background = "#dde5dc";
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.background = "#f1f5f9";
@@ -531,7 +531,7 @@ export default function RoomsPage() {
                   Xóa tất cả
                 </button>
               )}
-              <span style={{ color: "#64748b", fontSize: 14 }}>
+              <span style={{ color: "#738174", fontSize: 14 }}>
                 {showAdvancedFilters ? "▲ Thu gọn" : "▼ Mở rộng bộ lọc"}
               </span>
             </div>
@@ -539,7 +539,7 @@ export default function RoomsPage() {
 
           {/* Collapsible Filter Body */}
           {showAdvancedFilters && (
-            <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid #e2e8f0" }}>
+            <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid #dde5dc" }}>
               <div className="filter-grid">
                 {/* Từ khóa */}
                 <div className="filter-group">
@@ -690,20 +690,18 @@ export default function RoomsPage() {
                   {amenities.map((amenity) => {
                     const isChecked = selectedAmenityIds.includes(amenity.id);
                     return (
-                      <div
+                      <label
                         key={amenity.id}
                         className={`amenity-checkbox-item ${isChecked ? "checked" : ""}`}
-                        onClick={() => handleAmenityToggle(amenity.id)}
                       >
                         <input
                           type="checkbox"
                           checked={isChecked}
-                          onChange={() => {}}
+                          onChange={() => handleAmenityToggle(amenity.id)}
                           style={{ cursor: "pointer" }}
                         />
-                        <span>{amenity.icon || "✓"}</span>
-                        <span>{amenity.name}</span>
-                      </div>
+                        <span className="amenity-label">{amenity.name}</span>
+                      </label>
                     );
                   })}
                 </div>
@@ -715,7 +713,7 @@ export default function RoomsPage() {
         {/* 4. ACTIVE FILTERS PILLS (IF ANY) */}
         {activeFilterCount > 0 && !parsedQuery && (
           <div className="active-filters-bar">
-            <span style={{ fontSize: 12, fontWeight: 600, color: "#64748b" }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "#738174" }}>
               Đang lọc theo:
             </span>
             {keyword && (
@@ -790,7 +788,7 @@ export default function RoomsPage() {
         {isLoading ? (
           <div style={{ textAlign: "center", padding: "80px 0" }}>
             <div style={{ fontSize: 32, marginBottom: 12 }}>⚡</div>
-            <p style={{ color: "#64748b", fontWeight: 500 }}>Đang tải và lọc dữ liệu từ máy chủ...</p>
+            <p style={{ color: "#738174", fontWeight: 500 }}>Đang tải và lọc dữ liệu từ máy chủ...</p>
           </div>
         ) : (
           <>
@@ -816,7 +814,7 @@ export default function RoomsPage() {
               <div className="empty-state" style={{ textAlign: "center", padding: "70px 20px" }}>
                 <div style={{ fontSize: 48, marginBottom: 16 }}>🏡</div>
                 <h3 style={{ fontSize: 20, marginBottom: 8 }}>Không tìm thấy phòng trọ phù hợp</h3>
-                <p style={{ color: "#64748b", maxWidth: 450, margin: "0 auto 20px" }}>
+                <p style={{ color: "#738174", maxWidth: 450, margin: "0 auto 20px" }}>
                   Hãy thử nới lỏng các tiêu chí lọc giá, diện tích, hoặc thử tìm kiếm bằng câu tự nhiên khác.
                 </p>
                 <button

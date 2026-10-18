@@ -17,7 +17,8 @@ public class SupportController {
     }
     @GetMapping("/mine")
     public ApiResponse<PageResponse<ComplaintView>> mine(@RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size, @RequestParam(required = false) java.util.UUID contractId, Authentication auth) {
-        return ApiResponse.success(operations.complaints(page, size, null, auth.getName(), contractId));
+            @RequestParam(defaultValue = "10") int size, @RequestParam(required = false) java.util.UUID contractId,
+            @RequestParam(required = false) com.phongtro.backend.entity.SupportComplaint.Status status, Authentication auth) {
+        return ApiResponse.success(operations.complaints(page, size, status, auth.getName(), contractId));
     }
 }

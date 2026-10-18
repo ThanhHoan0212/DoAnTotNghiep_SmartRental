@@ -1,5 +1,8 @@
 .admin-shell { display:grid; grid-template-columns:244px minmax(0,1fr); min-height:calc(100vh - 72px); background:#f4f7f8; color:#20312e; }
 .admin-sidebar,.admin-chart { min-width:0; }
+.support-result { background:#fff; overflow-wrap:anywhere; }
+.support-result h3 { font-size:15px; margin:18px 0 8px; }
+.support-result .admin-response h3 { margin-top:0; }
 .contract-support { margin-top:18px; min-width:0; }
 .contract-support button { border:1px solid #d9e3de; background:#fff; border-radius:7px; padding:9px 13px; color:#344c40; font:inherit; font-size:13px; cursor:pointer; }
 .contract-support button:disabled { opacity:.5; cursor:not-allowed; }

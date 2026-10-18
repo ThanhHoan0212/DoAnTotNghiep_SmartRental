@@ -71,6 +71,11 @@ button {
   color: #167c5a;
 }
 
+.nav a.active {
+  color: #167c5a;
+  font-weight: 700;
+}
+
 .header-actions {
   margin-left: auto;
   display: flex;
