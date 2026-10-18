@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 
 import Header from "./components/Header";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -15,6 +15,8 @@ import ContractsPage from "./pages/ContractsPage";
 import EkycPage from "./pages/EkycPage";
 
 import VnpayReturnPage from "./pages/VnpayReturnPage";
+import AdminPage from "./pages/AdminPage";
+
 
 function App() {
   return (
@@ -22,6 +24,8 @@ function App() {
       <Header />
 
       <Routes>
+        <Route path="/admin/*" element={<ProtectedRoute allowedRoles={['ADMIN']}><AdminPage /></ProtectedRoute>} />
+        <Route path="/support" element={<Navigate to="/contracts" replace />} />
         <Route path="/" element={<HomePage />} />
         <Route path="/rooms" element={<RoomsPage />} />
         <Route path="/rooms/:id" element={<RoomDetailPage />} />

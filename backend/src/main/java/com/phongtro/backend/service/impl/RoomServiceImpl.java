@@ -245,7 +245,7 @@ public class RoomServiceImpl implements RoomService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<RoomSummaryResponse> getAllRoomsForAdmin(int page, int size, RoomStatus status, String district) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Pageable pageable = com.phongtro.backend.service.AdminOperationsService.page(page, size);
 
         Specification<Room> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();

@@ -10,13 +10,13 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const from = (location.state as { from?: { pathname?: string; search?: string; hash?: string } } | null)?.from;
   const redirectPath = from?.pathname?.startsWith('/') && !from.pathname.startsWith('//')
-    ? from.pathname + (from.search || '') + (from.hash || '') : '/';
+    ? from.pathname + (from.search || '') + (from.hash || '') : user?.role === 'ADMIN' ? '/admin' : '/';
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -50,7 +50,6 @@ export default function LoginPage() {
         localStorage.removeItem('savedEmail');
       }
 
-      navigate(redirectPath, { replace: true });
     } catch (err: any) {
       if (err instanceof ApiError) {
         setError(err.message);

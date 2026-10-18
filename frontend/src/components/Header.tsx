@@ -52,6 +52,7 @@ export default function Header() {
         <nav className="nav">
           <Link to="/">Trang chủ</Link>
           <Link to="/rooms">Phòng trọ</Link>
+          {user?.role === 'ADMIN' && <Link to="/admin" style={{ color: '#167c5a', fontWeight: 700 }}>Quản trị</Link>}
           <Link to="/favorites">Yêu thích</Link>
           {isAuthenticated && <Link to="/contracts">Hợp đồng</Link>}
         </nav>
@@ -185,6 +186,7 @@ export default function Header() {
                     </div>
                   </div>
 
+                  {user.role === 'ADMIN' && <Link to="/admin" onClick={() => setDropdownOpen(false)} style={{ display: 'block', padding: '12px 16px', fontWeight: 700, color: '#167c5a' }}>Trung tâm quản trị</Link>}
                   <Link
                     to="/profile"
                     onClick={() => setDropdownOpen(false)}

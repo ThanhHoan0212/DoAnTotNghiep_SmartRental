@@ -43,6 +43,12 @@
 
 ## 3. Hướng dẫn Chạy Hệ thống
 
+### Chạy trực tiếp trên Windows
+
+Từ thư mục `backend`, chạy `./mvnw.cmd spring-boot:run` với JDK 17+ và PostgreSQL đang hoạt động. `JAVA_HOME` phải trỏ tới thư mục JDK chứa `bin/java.exe`. Trong `.env`, đặt chú thích trên dòng riêng, không gắn vào các giá trị số như `JWT_EXPIRATION_MS`.
+
+Migration chữ ký SmartCA dùng V17 để tránh trùng V15/V16 trong database local. Profile `dev` cho phép giữ lịch sử migration không có trên nhánh hiện tại; checksum của các migration hiện có vẫn được kiểm tra. Khi triển khai `prod`, cần đầy đủ file migration tương ứng với database đích.
+
 ### Cách 1: Chạy Database bằng Docker Compose (Khuyên dùng khi dev)
 
 1. Khởi động PostgreSQL 15:
@@ -88,3 +94,20 @@ Sau khi ứng dụng khởi chạy thành công, truy cập Swagger UI tại:
 | `PUT` | `/api/v1/users/me/change-password` | Authenticated | Đổi mật khẩu |
 | `GET` | `/api/v1/users` | `ADMIN` | Phân trang danh sách người dùng (lọc theo role, status) |
 | `PATCH` | `/api/v1/users/{id}/status` | `ADMIN` | Khóa hoặc kích hoạt lại tài khoản người dùng |
+
+## 6. Quản trị và hỗ trợ hợp đồng
+
+Sau khi đăng nhập bằng role `ADMIN`, frontend tự chuyển đến `/admin`: quản lý phòng, tài khoản, xử lý khiếu nại và báo cáo phân tích. API `/api/v1/admin/**` chỉ dành cho admin.
+
+- Phòng: lọc, xem/sửa, duyệt, từ chối, ẩn và xóa phòng chưa phát sinh hợp đồng. Trạng thái giữ chỗ/đã thuê được kiểm soát qua hợp đồng.
+- Tài khoản: tìm kiếm theo họ tên/email/điện thoại, lọc theo vai trò/trạng thái, khóa/mở khóa. Không cho phép khóa admin; tài khoản bị khóa không thể tiếp tục dùng JWT cũ.
+- Hỗ trợ: vào **Hợp đồng → Hỗ trợ hợp đồng**. Chỉ người thuê/chủ nhà của hợp đồng được gửi yêu cầu; mỗi bên chỉ xem yêu cầu do mình gửi. Admin xem mã hợp đồng, phòng liên quan và phản hồi tại `/admin/complaints`. Đường dẫn cũ `/support` chuyển đến `/contracts`.
+- Báo cáo: hiện trạng hệ thống, tăng trưởng theo tháng, cơ cấu tài khoản/tin đăng, nguồn cung và giá trung bình theo quận, hợp đồng tạo trong kỳ, tiền cọc VNPay thành công và xuất CSV. Tiền cọc là tiền thu hộ, không phải doanh thu nền tảng.
+
+`POST /api/v1/complaints` yêu cầu `subject`, `category`, `description`, `contractId`. Backend kiểm tra người gửi thuộc hợp đồng và tự lấy phòng tương ứng. `GET /api/v1/complaints/mine?contractId=<uuid>` lọc yêu cầu của người đăng nhập theo hợp đồng. `PATCH /api/v1/admin/complaints/{id}` dùng `version` để tránh ghi đè khi xử lý đồng thời.
+
+Migration V18 được giữ nguyên lịch sử đã áp dụng. V19 bổ sung liên kết hợp đồng cho khiếu nại; các bản ghi cũ vẫn được giữ lại. Chức năng tin tức đã gỡ.
+
+Báo cáo: `GET /api/v1/admin/analytics?from=YYYY-MM-DD&to=YYYY-MM-DD`, tính đến hết ngày cuối theo giờ Việt Nam, mặc định 6 tháng, tối đa 3 năm. Các chỉ số hiện trạng và phân bố phòng/tài khoản không phụ thuộc bộ lọc ngày.
+
+Kiểm tra backend: `./mvnw.cmd test`. Kiểm tra frontend: `npm run build` từ thư mục `frontend`.

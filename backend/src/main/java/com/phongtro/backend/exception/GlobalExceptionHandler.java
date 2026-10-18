@@ -18,11 +18,18 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler({org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class,
+            org.springframework.http.converter.HttpMessageNotReadableException.class})
+    public ResponseEntity<ApiResponse<Object>> handleInvalidParameter(Exception ex) {
+        return ResponseEntity.badRequest().body(ApiResponse.builder().success(false)
+                .message("Tham số hoặc dữ liệu gửi lên không hợp lệ").build());
+    }
+
     @ExceptionHandler(org.springframework.dao.OptimisticLockingFailureException.class)
     public ResponseEntity<ApiResponse<Object>> handleConcurrentUpdate(Exception ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.builder()
                 .success(false)
-                .message("Hợp đồng vừa được cập nhật bởi thao tác khác. Vui lòng tải lại và thử lại.")
+                .message("Dữ liệu vừa được cập nhật bởi thao tác khác. Vui lòng tải lại và thử lại.")
                 .build());
     }
 

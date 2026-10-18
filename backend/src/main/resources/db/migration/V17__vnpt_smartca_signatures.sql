@@ -1,4 +1,4 @@
--- Migration V15: VNPT SmartCA Digital Signatures
+-- Migration V17: VNPT SmartCA Digital Signatures
 ALTER TABLE contracts
     ADD COLUMN tenant_signature TEXT,
     ADD COLUMN landlord_signature TEXT,
