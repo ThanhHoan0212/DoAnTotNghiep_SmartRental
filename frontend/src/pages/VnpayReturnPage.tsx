@@ -89,7 +89,7 @@ export default function VnpayReturnPage() {
   const isReviewRequired = payment?.status === 'REVIEW_REQUIRED';
 
   return (
-    <main className="container" style={{ padding: '60px 20px', maxWidth: 680 }}>
+    <main className="container payment-page" style={{ padding: '60px 20px', maxWidth: 680 }}>
       <div style={{
         background: '#fff',
         borderRadius: 16,
@@ -187,26 +187,26 @@ export default function VnpayReturnPage() {
         {/* Bảng chi tiết thanh toán */}
         {payment && (
           <div style={{
-            background: '#f8fafc',
+            background: '#f5f7f4',
             borderRadius: 12,
             padding: '20px 24px',
             margin: '0 0 28px',
             textAlign: 'left',
-            border: '1px solid #e2e8f0',
+            border: '1px solid #dde5dc',
             fontSize: 14
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-              <span style={{ color: '#64748b' }}>Số tiền cọc:</span>
-              <strong style={{ color: '#0f172a', fontSize: 16 }}>{payment.amount.toLocaleString('vi-VN')} đ</strong>
+              <span style={{ color: '#738174' }}>Số tiền cọc:</span>
+              <strong style={{ color: '#233c2e', fontSize: 16 }}>{payment.amount.toLocaleString('vi-VN')} đ</strong>
             </div>
             {reference && (
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-                <span style={{ color: '#64748b' }}>Mã giao dịch:</span>
+                <span style={{ color: '#738174' }}>Mã giao dịch:</span>
                 <span style={{ fontFamily: 'monospace', color: '#334155' }}>{reference}</span>
               </div>
             )}
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: '#64748b' }}>Trạng thái:</span>
+              <span style={{ color: '#738174' }}>Trạng thái:</span>
               <span style={{
                 fontWeight: 600,
                 color: isSuccess ? '#16a34a' : isFailed ? '#dc2626' : isPending ? '#2563eb' : '#d97706'
@@ -285,7 +285,7 @@ export default function VnpayReturnPage() {
           )}
 
           {isSuccess && (
-            <Link to="/contracts" style={{ color: '#64748b', fontSize: 14, textDecoration: 'underline' }}>
+            <Link to="/contracts" style={{ color: '#738174', fontSize: 14, textDecoration: 'underline' }}>
               Về danh sách hợp đồng
             </Link>
           )}

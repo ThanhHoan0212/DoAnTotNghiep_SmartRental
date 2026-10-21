@@ -50,17 +50,17 @@ export default function FavoritesPage() {
   };
 
   return (
-    <main className="favorites-page" style={{ padding: "40px 0 80px", minHeight: "80vh", background: "#f8fafc" }}>
+    <main className="favorites-page" style={{ padding: "40px 0 80px", minHeight: "80vh", background: "#f5f7f4" }}>
       <div className="container" style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 16px" }}>
         {/* Page Header */}
         <div
           style={{
-            background: "linear-gradient(135deg, #1e3a8a 0%, #167c5a 100%)",
+            background: "#edf4ee",
             borderRadius: "16px",
             padding: "36px 32px",
-            color: "#ffffff",
+            color: "#214d3a",
             marginBottom: "32px",
-            boxShadow: "0 10px 25px rgba(22, 124, 90, 0.15)",
+            boxShadow: "none",
             display: "flex",
             flexDirection: "column",
             gap: "12px",
@@ -107,14 +107,14 @@ export default function FavoritesPage() {
             style={{
               textAlign: "center",
               padding: "80px 0",
-              color: "#64748b",
+              color: "#738174",
             }}
           >
             <div
               style={{
                 width: "40px",
                 height: "40px",
-                border: "4px solid #e2e8f0",
+                border: "4px solid #dde5dc",
                 borderTopColor: "#167c5a",
                 borderRadius: "50%",
                 animation: "spin 1s linear infinite",
@@ -130,7 +130,7 @@ export default function FavoritesPage() {
               padding: "70px 24px",
               background: "#ffffff",
               borderRadius: "16px",
-              border: "1px dashed #cbd5e1",
+              border: "1px dashed #d5dfd3",
               maxWidth: "600px",
               margin: "40px auto",
             }}
@@ -151,7 +151,7 @@ export default function FavoritesPage() {
             <h3 style={{ fontSize: "20px", fontWeight: 700, color: "#1e293b", marginBottom: "8px" }}>
               Chưa có phòng trọ yêu thích
             </h3>
-            <p style={{ color: "#64748b", fontSize: "14px", lineHeight: "1.6", marginBottom: "24px" }}>
+            <p style={{ color: "#738174", fontSize: "14px", lineHeight: "1.6", marginBottom: "24px" }}>
               Bạn chưa lưu phòng trọ nào vào danh sách yêu thích. Hãy bấm vào biểu tượng trái tim trên các thẻ phòng để lưu lại và theo dõi thuận tiện hơn!
             </p>
             <Link
@@ -192,7 +192,7 @@ export default function FavoritesPage() {
                     className="room-card favorite-card"
                     style={{
                       background: "#ffffff",
-                      border: "1px solid #e2e8f0",
+                      border: "1px solid #dde5dc",
                       borderRadius: "12px",
                       overflow: "hidden",
                       transition: "all 0.2s ease",
@@ -282,7 +282,7 @@ export default function FavoritesPage() {
                           alignItems: "center",
                           justifyContent: "space-between",
                           fontSize: "13px",
-                          color: "#64748b",
+                          color: "#738174",
                           marginBottom: "16px",
                         }}
                       >
@@ -355,7 +355,7 @@ export default function FavoritesPage() {
                   style={{
                     padding: "8px 16px",
                     borderRadius: "8px",
-                    border: "1px solid #cbd5e1",
+                    border: "1px solid #d5dfd3",
                     background: currentPage === 0 ? "#f1f5f9" : "#ffffff",
                     cursor: currentPage === 0 ? "not-allowed" : "pointer",
                     fontSize: "14px",
@@ -363,7 +363,7 @@ export default function FavoritesPage() {
                 >
                   Trang trước
                 </button>
-                <span style={{ fontSize: "14px", color: "#64748b", margin: "0 8px" }}>
+                <span style={{ fontSize: "14px", color: "#738174", margin: "0 8px" }}>
                   Trang {currentPage + 1} / {totalPages}
                 </span>
                 <button
@@ -373,7 +373,7 @@ export default function FavoritesPage() {
                   style={{
                     padding: "8px 16px",
                     borderRadius: "8px",
-                    border: "1px solid #cbd5e1",
+                    border: "1px solid #d5dfd3",
                     background: currentPage >= totalPages - 1 ? "#f1f5f9" : "#ffffff",
                     cursor: currentPage >= totalPages - 1 ? "not-allowed" : "pointer",
                     fontSize: "14px",

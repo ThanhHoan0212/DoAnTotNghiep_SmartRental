@@ -1,0 +1,12 @@
+.contracts-page {
+  --contract-button-font: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Shared typography for actions, filters, tabs and contract modal controls. */
+.contracts-page :is(button, a.btn) {
+  font-family: var(--contract-button-font);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: normal;
+}

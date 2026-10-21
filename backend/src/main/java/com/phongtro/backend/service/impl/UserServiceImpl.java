@@ -97,6 +97,9 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserResponse updateUserStatus(UUID userId, UserStatus status) {
         User user = getUserEntityById(userId);
+        if (user.getRole() == Role.ADMIN && status != UserStatus.ACTIVE) {
+            throw new AppException(ErrorCode.OPERATION_NOT_ALLOWED, "Không được khóa hoặc vô hiệu hóa tài khoản quản trị viên");
+        }
         user.setStatus(status);
         User updatedUser = userRepository.save(user);
         log.info("Admin updated user [{}] status to [{}]", userId, status);

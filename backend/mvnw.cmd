@@ -70,6 +70,11 @@ goto error
 
 :OkJHome
 if exist "%JAVA_HOME%\bin\java.exe" goto init
+@REM Recover a duplicated final JDK directory in JAVA_HOME.
+if exist "%JAVA_HOME%\..\bin\javac.exe" (
+    for %%I in ("%JAVA_HOME%\..") do set "JAVA_HOME=%%~fI"
+    goto init
+)
 
 echo.
 echo Error: JAVA_HOME is set to an invalid directory. >&2

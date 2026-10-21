@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 
 import Header from "./components/Header";
+import ChatPage from "./pages/ChatPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 import HomePage from "./pages/HomePage";
@@ -16,6 +17,8 @@ import EkycPage from "./pages/EkycPage";
 
 import VnpayReturnPage from "./pages/VnpayReturnPage";
 import ChatbotWidget from "./components/ChatbotWidget";
+import AdminPage from "./pages/AdminPage";
+import SupportResultsPage from "./pages/SupportResultsPage";
 
 function App() {
   return (
@@ -23,6 +26,9 @@ function App() {
       <Header />
 
       <Routes>
+        <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
+        <Route path="/admin/*" element={<ProtectedRoute allowedRoles={['ADMIN']}><AdminPage /></ProtectedRoute>} />
+        <Route path="/support" element={<ProtectedRoute><SupportResultsPage /></ProtectedRoute>} />
         <Route path="/" element={<HomePage />} />
         <Route path="/rooms" element={<RoomsPage />} />
         <Route path="/rooms/:id" element={<RoomDetailPage />} />

@@ -53,6 +53,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/payments/vnpay/ipn", "/api/v1/payments/vnpay/ipn").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/amenities").permitAll()
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/v1/rooms").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/rooms/{id:[0-9a-fA-F-]{36}}").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/rooms/search").permitAll()

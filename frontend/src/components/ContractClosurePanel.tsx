@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import type { Contract, ClosureRefund } from '../types/contract';
 import { contractService } from '../services/contractService';
+import './ContractDetailDialog.css';
 
 const refundLabels = { FULL: 'Hoàn toàn bộ cọc', PARTIAL: 'Hoàn một phần cọc', NONE: 'Không hoàn cọc' };
 const statusLabels = { PENDING: 'Chờ bên còn lại xác nhận', ACCEPTED: 'Đã thống nhất · chờ ngày chấm dứt', REJECTED: 'Đã từ chối', COMPLETED: 'Đã hoàn tất hủy / chấm dứt', LAPSED: 'Không còn hiệu lực do hợp đồng đã hết hạn' };

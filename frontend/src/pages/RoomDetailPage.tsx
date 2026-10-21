@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { ArrowLeft, Check, Eye, Heart, MapPin, Maximize2, Phone, Mail, FileText, CheckCircle } from "lucide-react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { roomService } from "../services/roomService";
+import { chatService } from "../services/chatService";
 import { favoriteService } from "../services/favoriteService";
 import { useAuth } from "../context/AuthContext";
 import { RentalRequestModal } from "../components/RentalRequestModal";
@@ -15,6 +16,20 @@ export default function RoomDetailPage() {
   const { user, isAuthenticated } = useAuth();
 
   const [room, setRoom] = useState<RoomDetail | null>(null);
+  const [startingChat, setStartingChat] = useState(false);
+  const [chatError, setChatError] = useState('');
+
+  const handleStartChat = async () => {
+    if (!isAuthenticated) { navigate('/login'); return; }
+    if (!id || startingChat) return;
+    setStartingChat(true); setChatError('');
+    try {
+      const conversation = await chatService.start(id);
+      navigate(`/chat?conversation=${conversation.id}`);
+    } catch (err) {
+      setChatError(err instanceof Error ? err.message : 'Không thể bắt đầu trò chuyện. Vui lòng thử lại.');
+    } finally { setStartingChat(false); }
+  };
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string>("");
@@ -98,7 +113,7 @@ export default function RoomDetailPage() {
 
   if (isLoading) {
     return (
-      <main className="page">
+      <main className="page room-detail-page">
         <div className="container" style={{ textAlign: 'center', padding: '100px 0' }}>
           <h2>Đang tải chi tiết phòng trọ...</h2>
         </div>
@@ -108,7 +123,7 @@ export default function RoomDetailPage() {
 
   if (error || !room) {
     return (
-      <main className="page">
+      <main className="page room-detail-page">
         <div className="container empty-state" style={{ textAlign: 'center', padding: '100px 0' }}>
           <h2>{error || "Không tìm thấy phòng"}</h2>
           <p style={{ margin: '16px 0' }}>
@@ -126,7 +141,7 @@ export default function RoomDetailPage() {
   const isRented = room.status === "RENTED" || room.status === "RESERVED";
 
   return (
-    <main className="page">
+    <main className="page room-detail-page">
       <div className="container">
         <Link to="/rooms" className="back-link">
           <ArrowLeft size={18} />
@@ -231,7 +246,7 @@ export default function RoomDetailPage() {
                 </span>
               )}
 
-              <span style={{ fontSize: '13px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span style={{ fontSize: '13px', color: '#738174', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <Eye size={16} /> {room.viewCount} lượt xem
               </span>
 
@@ -246,7 +261,7 @@ export default function RoomDetailPage() {
 
             <p className="detail-price" style={{ fontSize: '28px', fontWeight: 700, color: '#167c5a' }}>
               {room.price ? room.price.toLocaleString("vi-VN") : 0} đ
-              <span style={{ fontSize: '16px', color: '#64748b', fontWeight: 400 }}> / tháng</span>
+              <span style={{ fontSize: '16px', color: '#738174', fontWeight: 400 }}> / tháng</span>
             </p>
 
             <div className="detail-meta">
@@ -266,33 +281,33 @@ export default function RoomDetailPage() {
               <PriceTrendWidget district={room.district} />
             )}
 
-            <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '24px 0' }} />
+            <hr style={{ border: 'none', borderTop: '1px solid #dde5dc', margin: '24px 0' }} />
 
             <h2>Mô tả phòng</h2>
             <p className="description" style={{ whiteSpace: 'pre-line', lineHeight: '1.7', color: '#334155' }}>
               {room.description || "Chủ nhà chưa cập nhật mô tả chi tiết cho phòng trọ này."}
             </p>
 
-            <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '24px 0' }} />
+            <hr style={{ border: 'none', borderTop: '1px solid #dde5dc', margin: '24px 0' }} />
 
             <h2>Tiện ích có sẵn ({room.amenities ? room.amenities.length : 0})</h2>
 
             <div className="detail-amenities" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginTop: '16px' }}>
               {room.amenities && room.amenities.length > 0 ? (
                 room.amenities.map((item) => (
-                  <span key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                  <span key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: '#f5f7f4', borderRadius: '8px', border: '1px solid #dde5dc' }}>
                     <Check size={17} color="#167c5a" />
                     {item.name}
                   </span>
                 ))
               ) : (
-                <p style={{ color: '#64748b' }}>Chưa có thông tin tiện ích đính kèm.</p>
+                <p style={{ color: '#738174' }}>Chưa có thông tin tiện ích đính kèm.</p>
               )}
             </div>
           </div>
 
           <aside className="contact-card">
-            <p style={{ fontWeight: 600, color: '#64748b', marginBottom: '12px' }}>Thông tin người cho thuê</p>
+            <p style={{ fontWeight: 600, color: '#738174', marginBottom: '12px' }}>Thông tin người cho thuê</p>
 
             <div className="owner" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
               <div className="avatar" style={{
@@ -311,13 +326,20 @@ export default function RoomDetailPage() {
 
               <div>
                 <strong>{room.landlord?.fullName || "Chủ nhà SmartRental"}</strong>
-                <div style={{ fontSize: '12px', color: '#64748b' }}>
+                <div style={{ fontSize: '12px', color: '#738174' }}>
                   {room.landlord?.role === 'ADMIN' ? 'Ban quản trị' : 'Chủ nhà xác thực'}
                 </div>
               </div>
             </div>
 
             {/* NÚT THUÊ PHÒNG / ĐẶT CỌC */}
+            {!isOwner && (
+              <button type="button" className="btn btn-primary btn-full" disabled={startingChat}
+                style={{ marginBottom: '12px' }} onClick={() => void handleStartChat()}>
+                {startingChat ? 'Đang mở trò chuyện...' : 'Nhắn tin cho chủ nhà'}
+              </button>
+            )}
+            {chatError && <p role="alert" style={{ color: '#b91c1c' }}>{chatError}</p>}
             {isOwner ? (
               <div
                 style={{

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Sparkles } from "lucide-react";
+import { Search, Sparkles, ArrowUpRight, Heart, MapPin } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import RoomCard from "../components/RoomCard";
 import { rooms as mockRooms } from "../data/rooms";
@@ -62,7 +62,7 @@ export default function HomePage() {
 
   return (
     <>
-      <section className="hero">
+      <section className="hero"><div className="container home-hero-layout">
         <div className="container hero-content">
           <span className="hero-badge">Tìm phòng thông minh</span>
 
@@ -99,6 +99,12 @@ export default function HomePage() {
             <Link to="/rooms?district=Thủ Đức">Thủ Đức</Link>
             <Link to="/rooms?district=Gò Vấp">Gò Vấp</Link>
           </div>
+        </div>
+        <div className="home-hero-visual">
+          <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1000&q=85" alt="Không gian căn hộ sáng thoáng với khu vực sinh hoạt và phòng ngủ" fetchPriority="high" />
+          <Link to="/rooms" className="home-hero-card"><span className="home-hero-icon"><MapPin size={22} /></span><span><small>BẮT ĐẦU TÌM KIẾM</small><strong>Nơi ở tiếp theo của bạn</strong></span><ArrowUpRight size={20} /></Link>
+          <Link to="/favorites" className="home-hero-save"><Heart size={17} /> Phòng bạn yêu thích</Link>
+        </div>
         </div>
       </section>
 

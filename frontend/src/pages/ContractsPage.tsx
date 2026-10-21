@@ -12,16 +12,23 @@ import {
   ShieldCheck,
   Building,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { contractService } from '../services/contractService';
-import ContractDetailDialog from '../components/ContractDetailDialog';
+import ContractClosurePanel from '../components/ContractClosurePanel';
 import SmartCaSignModal from '../components/SmartCaSignModal';
 import ContractPdfModal from '../components/ContractPdfModal';
 import type { Contract, ContractStatus } from '../types/contract';
+import ContractSupportPanel from '../components/ContractSupportPanel';
+import { Modal } from '../components/AdminShared';
+import './ContractsPage.css';
 
 export default function ContractsPage() {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const requestedContractId = searchParams.get('contractId');
+  const [supportTarget, setSupportTarget] = useState<Contract | null>(null);
+  const [supportBusy, setSupportBusy] = useState(false);
 
   // Active Tab: 'tenant' (Hợp đồng thuê của tôi) hoặc 'landlord' (Quản lý khách thuê)
   const isLandlordOrAdmin = user?.role === 'LANDLORD' || user?.role === 'ADMIN';
@@ -93,10 +100,17 @@ export default function ContractsPage() {
   }, [loadContracts]);
 
   const filteredContracts = contracts;
-  const [documentTarget, setDocumentTarget] = useState<Contract | null>(null);
-  const [acceptedDocument, setAcceptedDocument] = useState(false);
+  const [closureTarget, setClosureTarget] = useState<Contract | null>(null);
 
-  const detailId = documentTarget?.id;
+  useEffect(() => {
+    if (!requestedContractId) return;
+    let active = true;
+    contractService.getContractDetail(requestedContractId).then(detail => { if (active) setPdfTarget(detail); })
+      .catch(err => { if (active) setError(err instanceof Error ? err.message : 'Không thể mở hợp đồng.'); });
+    return () => { active = false; };
+  }, [requestedContractId]);
+
+  const closureId = closureTarget?.id;
   useEffect(() => {
     let disposed = false;
     let running = false;
@@ -104,11 +118,11 @@ export default function ContractsPage() {
       if (document.hidden || running || isProcessingAction) return;
       running = true;
       try {
-        await Promise.all([loadContracts(true), detailId ? contractService.getContractDetail(detailId).then(detail => {
-          if (!disposed) setDocumentTarget(current => current?.id === detail.id ? detail : current);
+        await Promise.all([loadContracts(true), closureId ? contractService.getContractDetail(closureId).then(detail => {
+          if (!disposed) setClosureTarget(current => current?.id === detail.id ? detail : current);
         }) : Promise.resolve()]);
       } catch (err) {
-        if (!disposed) setError(err instanceof Error ? err.message : 'Không thể đồng bộ chi tiết hợp đồng.');
+        if (!disposed) setError(err instanceof Error ? err.message : 'Không thể đồng bộ yêu cầu hủy / chấm dứt.');
       } finally { running = false; }
     };
     const initial = window.setTimeout(() => void refresh(), 0);
@@ -124,13 +138,13 @@ export default function ContractsPage() {
       window.removeEventListener('online', refresh);
       document.removeEventListener('visibilitychange', refresh);
     };
-  }, [loadContracts, detailId, isProcessingAction]);
+  }, [loadContracts, closureId, isProcessingAction]);
 
   const applyUpdate = (updated: Contract) => {
     loadSequence.current++;
     setContracts(current => current.map(item => item.id === updated.id ? updated : item));
-    setDocumentTarget(current => current?.id === updated.id ? updated : current);
-    setAcceptedDocument(false);
+    setClosureTarget(current => current?.id === updated.id ? updated : current);
+
   };
 
   const handleSimulation = async (contract: Contract, action: 'deposit' | 'signature') => {
@@ -236,26 +250,29 @@ export default function ContractsPage() {
   };
 
   return (
-    <main className="page" style={{ background: '#f8fafc', minHeight: 'calc(100vh - 72px)', padding: '32px 0 60px' }}>
+    <main className="page contracts-page" style={{ background: '#f5f7f4', minHeight: 'calc(100vh - 72px)', padding: '32px 0 60px' }}>
       <div className="container">
         {/* Page Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
           <div>
-            <h1 style={{ margin: '0 0 6px', fontSize: '26px', color: '#0f172a', fontWeight: 800 }}>
+            <h1 style={{ margin: '0 0 6px', fontSize: '26px', color: '#233c2e', fontWeight: 800 }}>
               Quản lý hợp đồng thuê phòng
             </h1>
-            <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>
+            <p style={{ margin: 0, color: '#738174', fontSize: '14px' }}>
               Yêu cầu thuê → Chấp nhận → Thanh toán cọc → Tạo hợp đồng → Hai bên ký → Có hiệu lực.
             </p>
           </div>
 
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+          <Link to="/support" className="btn btn-outline">Kết quả khiếu nại & hỗ trợ của tôi</Link>
           <Link to="/rooms" className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Building size={16} />
             Tìm thêm phòng mới
           </Link>
+          </div>
         </div>
 
-        <p style={{ fontSize: 12, color: '#64748b' }}></p>
+        <p style={{ fontSize: 12, color: '#738174' }}></p>
         {notice && <div role="status" style={{ padding: 14, background: '#ecfdf5', color: '#065f46', borderRadius: 10, marginBottom: 16 }}>{notice}</div>}
         {/* Tabs: Tenant vs Landlord */}
         <div className="contract-tabs">
@@ -321,9 +338,7 @@ export default function ContractsPage() {
               style={{
                 padding: '6px 12px',
                 borderRadius: '9999px',
-                fontSize: '12px',
-                fontWeight: 600,
-                border: selectedStatus === item.key ? '1px solid #167c5a' : '1px solid #cbd5e1',
+                border: selectedStatus === item.key ? '1px solid #167c5a' : '1px solid #d5dfd3',
                 background: selectedStatus === item.key ? '#ecfdf5' : '#ffffff',
                 color: selectedStatus === item.key ? '#065f46' : '#475569',
                 cursor: 'pointer',
@@ -337,7 +352,7 @@ export default function ContractsPage() {
 
         {/* Loading State */}
         {isLoading && (
-          <div style={{ textAlign: 'center', padding: '60px 0', color: '#64748b' }}>
+          <div style={{ textAlign: 'center', padding: '60px 0', color: '#738174' }}>
             <p>Đang tải danh sách hợp đồng...</p>
           </div>
         )}
@@ -364,7 +379,7 @@ export default function ContractsPage() {
             style={{
               background: '#ffffff',
               borderRadius: '16px',
-              border: '1px solid #e2e8f0',
+              border: '1px solid #dde5dc',
               padding: '60px 24px',
               textAlign: 'center',
             }}
@@ -377,7 +392,7 @@ export default function ContractsPage() {
                   : 'Chưa có yêu cầu thuê phòng nào gửi tới bạn'
                 : 'Không có hợp đồng nào với trạng thái đã chọn'}
             </h3>
-            <p style={{ color: '#64748b', fontSize: '14px', maxWidth: '460px', margin: '0 auto 20px' }}>
+            <p style={{ color: '#738174', fontSize: '14px', maxWidth: '460px', margin: '0 auto 20px' }}>
               {activeTab === 'tenant'
                 ? 'Hãy khám phá danh sách phòng trọ đã được kiểm duyệt tại TP. Hồ Chí Minh và gửi yêu cầu thuê ngay.'
                 : 'Các yêu cầu đặt cọc & thuê phòng từ khách hàng sẽ hiển thị tại đây khi có người quan tâm.'}
@@ -420,7 +435,7 @@ export default function ContractsPage() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                       <span className="contract-code">{code}</span>
                       {renderStatusBadge(contract.status)}
-                      <span style={{ fontSize: '12px', color: '#64748b' }}>
+                      <span style={{ fontSize: '12px', color: '#738174' }}>
                         Tạo ngày {new Date(contract.createdAt).toLocaleDateString('vi-VN')}
                       </span>
                     </div>
@@ -446,11 +461,11 @@ export default function ContractsPage() {
                   <div className="contract-card-body">
                     {/* Cột trái: Thông tin phòng & Đối tác */}
                     <div>
-                      <h4 style={{ margin: '0 0 6px', fontSize: '16px', color: '#0f172a' }}>
+                      <h4 style={{ margin: '0 0 6px', fontSize: '16px', color: '#233c2e' }}>
                         {roomTitle}
                       </h4>
                       {fullAddress && (
-                        <p style={{ margin: '0 0 14px', fontSize: '13px', color: '#64748b' }}>
+                        <p style={{ margin: '0 0 14px', fontSize: '13px', color: '#738174' }}>
                           {fullAddress}
                         </p>
                       )}
@@ -461,8 +476,8 @@ export default function ContractsPage() {
                       )}
                       <div className="contract-parties">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ color: '#64748b' }}>{otherPartyRole}:</span>
-                          <strong style={{ color: '#0f172a' }}>{otherPartyName}</strong>
+                          <span style={{ color: '#738174' }}>{otherPartyRole}:</span>
+                          <strong style={{ color: '#233c2e' }}>{otherPartyName}</strong>
                         </div>
                         {otherPartyPhone && (
                           <div style={{ color: '#475569' }}>
@@ -478,7 +493,7 @@ export default function ContractsPage() {
 
                       {/* Ghi chú hoặc lý do hủy nếu có */}
                       {contract.terms && (
-                        <div style={{ marginTop: '12px', fontSize: '12px', background: '#f8fafc', padding: '8px 12px', borderRadius: '6px', border: '1px solid #f1f5f9' }}>
+                        <div style={{ marginTop: '12px', fontSize: '12px', background: '#f5f7f4', padding: '8px 12px', borderRadius: '6px', border: '1px solid #f1f5f9' }}>
                           <strong style={{ color: '#334155' }}>Ghi chú gửi kèm:</strong> {contract.terms}
                         </div>
                       )}
@@ -514,18 +529,19 @@ export default function ContractsPage() {
                     </div>
                   </div>
 
-                  <div style={{ padding: '12px 20px', background: '#f8fafc', fontSize: '13px' }}>
+                  <div style={{ padding: '12px 20px', background: '#f5f7f4', fontSize: '13px' }}>
                     {contract.requestCode && <p>Mã yêu cầu: {contract.requestCode}</p>}
                     {contract.status === 'AWAITING_DEPOSIT' && contract.depositDeadline && <p>Hạn thanh toán cọc: {new Date(contract.depositDeadline).toLocaleString('vi-VN')}. Hết hạn sẽ giải phóng phòng.</p>}
                     {contract.depositPaidAt && <p>Đã xác nhận thanh toán: {new Date(contract.depositPaidAt).toLocaleString('vi-VN')} · {contract.paymentReference}</p>}
                     {contract.formalizedAt && <p>Hợp đồng được tạo: {new Date(contract.formalizedAt).toLocaleString('vi-VN')}</p>}
                     {contract.documentContent && <p>Người thuê: {contract.tenantSignedAt ? '✓ Đã ký số VNPT SmartCA' : 'Chưa ký'} · Chủ phòng: {contract.landlordSignedAt ? '✓ Đã ký số VNPT SmartCA' : 'Chưa ký'}</p>}
-                    {contract.closureRequests?.some(r => r.status === 'PENDING') && <p style={{ color: '#b45309', fontWeight: 600 }}>Có yêu cầu hủy / chấm dứt đang chờ bên còn lại xác nhận. Xem chi tiết để phản hồi.</p>}
+                    {contract.closureRequests?.some(r => r.status === 'PENDING') && <p style={{ color: '#b45309', fontWeight: 600 }}>Có yêu cầu hủy / chấm dứt đang chờ bên còn lại xác nhận. Chọn “Xem yêu cầu hủy / chấm dứt” để phản hồi.</p>}
                     {contract.agreedEndDate && <p>Ngày chấm dứt đã thống nhất: <strong>{new Date(contract.agreedEndDate).toLocaleDateString('vi-VN')}</strong>{contract.status === 'ACTIVE' ? ' · Hợp đồng vẫn đang có hiệu lực.' : ''}</p>}
                     {contract.activatedAt && <p>Có hiệu lực từ: {new Date(contract.activatedAt).toLocaleString('vi-VN')}</p>}
                   </div>
                   {/* Actions Bar */}
                   <div className="contract-actions">
+                    {(user?.id === contract.tenantId || user?.id === contract.landlordId) && <button type="button" className="btn btn-outline" onClick={() => setSupportTarget(contract)}>Hỗ trợ hợp đồng</button>}
                     {contract.status === 'AWAITING_DEPOSIT' && user?.id === contract.tenantId && (
                       <button className="btn btn-primary" disabled={isProcessingAction || Boolean(contract.depositDeadline && new Date(contract.depositDeadline).getTime() <= now)}
                         onClick={() => handleSimulation(contract, 'deposit')}>Thanh toán cọc qua VNPAY</button>
@@ -537,7 +553,7 @@ export default function ContractsPage() {
                       <button
                         type="button"
                         className="btn btn-primary"
-                        style={{ background: 'linear-gradient(135deg, #0056b3 0%, #0077e6 100%)', borderColor: '#0056b3', fontSize: '13px' }}
+                        style={{ background: 'linear-gradient(135deg, #0056b3 0%, #0077e6 100%)', borderColor: '#0056b3', }}
                         onClick={() => setSmartCaTarget(contract)}
                         disabled={isProcessingAction}
                       >
@@ -545,14 +561,11 @@ export default function ContractsPage() {
                         Ký số VNPT SmartCA
                       </button>
                     )}
-                    {(
-                      <button className="btn btn-outline" disabled={isProcessingAction}
-                        onClick={() => { setDocumentTarget(contract); setAcceptedDocument(false); }}>Xem chi tiết hợp đồng</button>
-                    )}
+
                     <button
                       type="button"
                       className="btn btn-outline"
-                      style={{ fontSize: '13px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                       disabled={isProcessingAction}
                       onClick={() => setPdfTarget(contract)}
                       title="Xem định dạng A4 và tải file PDF"
@@ -566,7 +579,7 @@ export default function ContractsPage() {
                         <button
                           type="button"
                           className="btn btn-outline"
-                          style={{ borderColor: '#ef4444', color: '#ef4444', fontSize: '13px', padding: '6px 14px' }}
+                          style={{ borderColor: '#ef4444', color: '#ef4444', padding: '6px 14px' }}
                           onClick={() => handleOpenActionModal(contract, 'REJECTED', 'Từ chối yêu cầu thuê phòng')}
                           disabled={isProcessingAction}
                         >
@@ -576,7 +589,7 @@ export default function ContractsPage() {
                         <button
                           type="button"
                           className="btn btn-primary"
-                          style={{ fontSize: '13px', padding: '6px 16px' }}
+                          style={{ padding: '6px 16px' }}
                           onClick={() => handleApprove(contract)}
                           disabled={isProcessingAction}
                         >
@@ -591,7 +604,7 @@ export default function ContractsPage() {
                       <button
                         type="button"
                         className="btn btn-outline"
-                        style={{ borderColor: '#ef4444', color: '#ef4444', fontSize: '13px', padding: '6px 14px' }}
+                        style={{ borderColor: '#ef4444', color: '#ef4444', padding: '6px 14px' }}
                         onClick={() => handleOpenActionModal(contract, 'CANCELLED', 'Hủy yêu cầu thuê phòng')}
                         disabled={isProcessingAction}
                       >
@@ -605,8 +618,8 @@ export default function ContractsPage() {
                       <button
                         type="button"
                         className="btn btn-outline"
-                        style={{ fontSize: '13px', padding: '6px 14px' }}
-                        onClick={() => { setDocumentTarget(contract); setAcceptedDocument(false); }}
+                        style={{ padding: '6px 14px' }}
+                        onClick={() => { setClosureTarget(contract); }}
                         disabled={isProcessingAction}
                       >
                         <AlertTriangle size={15} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
@@ -645,15 +658,12 @@ export default function ContractsPage() {
           </div>
         )}
 
-        {documentTarget && (
-          <ContractDetailDialog contract={documentTarget} userId={user?.id}
-            onBusy={setIsProcessingAction} onUpdated={applyUpdate}
-            busy={isProcessingAction} accepted={acceptedDocument} onAccept={setAcceptedDocument}
-            onClose={() => { setDocumentTarget(null); setAcceptedDocument(false); }}
-            onSign={() => setSmartCaTarget(documentTarget)}
-            statusBadge={renderStatusBadge(documentTarget.status)} />
-        )}
-
+        {supportTarget && <Modal title="Hỗ trợ & khiếu nại hợp đồng" close={() => { if (!supportBusy) setSupportTarget(null); }}><ContractSupportPanel key={supportTarget.id} contract={supportTarget} onBusy={setSupportBusy} /></Modal>}
+        {closureTarget && <Modal title="Hủy / chấm dứt hợp đồng" close={() => { if (!isProcessingAction) setClosureTarget(null); }}>
+          <p>Hợp đồng: <strong>{closureTarget.contractCode || closureTarget.contractNumber || closureTarget.id.slice(0, 8)}</strong></p>
+          <ContractClosurePanel contract={closureTarget} userId={user?.id} busy={isProcessingAction}
+            onBusy={setIsProcessingAction} onUpdated={applyUpdate} />
+        </Modal>}
         {smartCaTarget && (
           <SmartCaSignModal
             contract={smartCaTarget}
@@ -695,7 +705,7 @@ export default function ContractsPage() {
                   <p style={{ margin: '0 0 12px', fontSize: '14px', color: '#475569' }}>
                     Mã hợp đồng: <strong>{actionTarget.contract.contractCode || actionTarget.contract.contractNumber || actionTarget.contract.id.slice(0, 8)}</strong>
                   </p>
-                  <p style={{ margin: '0 0 16px', fontSize: '13px', color: '#64748b' }}>
+                  <p style={{ margin: '0 0 16px', fontSize: '13px', color: '#738174' }}>
                     Phòng trọ: {actionTarget.contract.roomTitle || actionTarget.contract.room?.title || 'Phòng trọ'}
                   </p>
 
@@ -711,7 +721,7 @@ export default function ContractsPage() {
                     style={{
                       width: '100%',
                       padding: '10px 12px',
-                      border: '1px solid #cbd5e1',
+                      border: '1px solid #d5dfd3',
                       borderRadius: '8px',
                       fontSize: '13px',
                       fontFamily: 'inherit',

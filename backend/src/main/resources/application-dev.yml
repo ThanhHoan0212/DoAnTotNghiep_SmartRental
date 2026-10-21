@@ -1,4 +1,8 @@
 spring:
+  flyway:
+    # Older local databases can contain migrations from another feature branch.
+    # Keep their history and continue validating migrations present in this branch.
+    ignore-migration-patterns: '*:missing,*:future'
   jpa:
     hibernate:
       ddl-auto: update

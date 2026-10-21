@@ -264,6 +264,16 @@ class RoomServiceTest {
     }
 
     @Test
+    void deletingRoomWithChatPreservesHistory() {
+        when(roomRepository.findByIdForUpdate(sampleRoom.getId())).thenReturn(Optional.of(sampleRoom));
+        when(userRepository.findByEmail(sampleLandlord.getEmail())).thenReturn(Optional.of(sampleLandlord));
+        when(roomRepository.hasChatHistory(sampleRoom.getId())).thenReturn(true);
+        assertEquals(ErrorCode.OPERATION_NOT_ALLOWED,
+                assertThrows(AppException.class, () -> roomService.deleteRoom(sampleRoom.getId(), sampleLandlord.getEmail())).getErrorCode());
+        verify(roomRepository, never()).delete(any(Room.class));
+    }
+
+    @Test
     void deletingRoomWithContractPreservesHistory() {
         when(roomRepository.findByIdForUpdate(sampleRoom.getId())).thenReturn(Optional.of(sampleRoom));
         when(userRepository.findByEmail(sampleLandlord.getEmail())).thenReturn(Optional.of(sampleLandlord));

@@ -165,6 +165,9 @@ public class RoomServiceImpl implements RoomService {
         if (contractRepository.existsByRoom(room)) {
             throw new AppException(ErrorCode.OPERATION_NOT_ALLOWED, "Phòng đã phát sinh hợp đồng, không thể xóa lịch sử. Bạn có thể ẩn tin đăng.");
         }
+        if (roomRepository.hasChatHistory(roomId)) {
+            throw new AppException(ErrorCode.OPERATION_NOT_ALLOWED, "Phòng đã có cuộc trò chuyện. Vui lòng ẩn tin đăng để giữ lịch sử tin nhắn.");
+        }
         roomRepository.delete(room);
         log.info("User [{}] deleted room listing [{}]", userEmail, roomId);
     }
@@ -253,7 +256,7 @@ public class RoomServiceImpl implements RoomService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<RoomSummaryResponse> getAllRoomsForAdmin(int page, int size, RoomStatus status, String district) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Pageable pageable = com.phongtro.backend.service.AdminOperationsService.page(page, size);
 
         Specification<Room> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();

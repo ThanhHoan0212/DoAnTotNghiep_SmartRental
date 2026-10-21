@@ -388,7 +388,7 @@ export default function EkycPage() {
 
   if (isLoadingStatus) {
     return (
-      <main className="page" style={{ padding: '60px 0', minHeight: '85vh', background: '#f8fafc' }}>
+      <main className="page ekyc-page" style={{ padding: '60px 0', minHeight: '85vh', background: '#f5f7f4' }}>
         <div
           className="container"
           style={{
@@ -398,7 +398,7 @@ export default function EkycPage() {
             background: '#ffffff',
             padding: '48px 24px',
             borderRadius: '16px',
-            border: '1px solid #e2e8f0',
+            border: '1px solid #dde5dc',
             boxShadow: '0 4px 16px rgba(0,0,0,0.03)',
           }}
         >
@@ -416,10 +416,10 @@ export default function EkycPage() {
           >
             <RefreshCw size={28} color="#167c5a" style={{ animation: 'spin 1.5s linear infinite' }} />
           </div>
-          <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#0f172a', marginBottom: '6px' }}>
+          <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#233c2e', marginBottom: '6px' }}>
             Đang kiểm tra hồ sơ eKYC...
           </h3>
-          <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>
+          <p style={{ color: '#738174', fontSize: '14px', margin: 0 }}>
             Hệ thống đang tải dữ liệu định danh của bạn, vui lòng đợi trong giây lát.
           </p>
         </div>
@@ -429,7 +429,7 @@ export default function EkycPage() {
 
   if (!user && !isAuthLoading) {
     return (
-      <main className="page" style={{ padding: '60px 0', minHeight: '85vh', background: '#f8fafc' }}>
+      <main className="page ekyc-page" style={{ padding: '60px 0', minHeight: '85vh', background: '#f5f7f4' }}>
         <div
           className="container"
           style={{
@@ -439,7 +439,7 @@ export default function EkycPage() {
             background: '#ffffff',
             padding: '48px 24px',
             borderRadius: '16px',
-            border: '1px solid #e2e8f0',
+            border: '1px solid #dde5dc',
             boxShadow: '0 4px 16px rgba(0,0,0,0.03)',
           }}
         >
@@ -455,12 +455,12 @@ export default function EkycPage() {
               margin: '0 auto 16px auto',
             }}
           >
-            <Lock size={28} color="#64748b" />
+            <Lock size={28} color="#738174" />
           </div>
-          <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#0f172a', marginBottom: '8px' }}>
+          <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#233c2e', marginBottom: '8px' }}>
             Yêu Cầu Đăng Nhập
           </h3>
-          <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '24px' }}>
+          <p style={{ color: '#738174', fontSize: '14px', marginBottom: '24px' }}>
             Vui lòng đăng nhập tài khoản để thực hiện định danh điện tử hoặc xem chứng chỉ eKYC đã xác thực.
           </p>
           <Link to="/login" className="btn btn-primary" style={{ padding: '10px 24px' }}>
@@ -472,7 +472,7 @@ export default function EkycPage() {
   }
 
   return (
-    <main className="page" style={{ padding: '40px 0', minHeight: '85vh', background: '#f8fafc' }}>
+    <main className="page ekyc-page" style={{ padding: '40px 0', minHeight: '85vh', background: '#f5f7f4' }}>
       {/* Canvas ẩn phục vụ chụp frame từ video */}
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 
@@ -484,7 +484,7 @@ export default function EkycPage() {
               background: '#ffffff',
               padding: '40px 32px',
               borderRadius: '20px',
-              border: '1px solid #e2e8f0',
+              border: '1px solid #dde5dc',
               boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01)',
             }}
           >
@@ -526,10 +526,10 @@ export default function EkycPage() {
                 <span>HỒ SƠ ĐÃ ĐỊNH DANH ĐIỆN TỬ eKYC THÀNH CÔNG</span>
               </div>
 
-              <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#0f172a', margin: '4px 0 8px 0' }}>
+              <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#233c2e', margin: '4px 0 8px 0' }}>
                 Tài Khoản Đã Được Xác Thực Danh Tính Thật
               </h1>
-              <p style={{ color: '#64748b', fontSize: '15px', maxWidth: '600px', margin: '0 auto' }}>
+              <p style={{ color: '#738174', fontSize: '15px', maxWidth: '600px', margin: '0 auto' }}>
                 Hồ sơ Căn cước công dân và sinh trắc học khuôn mặt của bạn đã được đối soát qua công nghệ{' '}
                 <strong>VNPT AI</strong> và được cấp chứng chỉ người dùng thật trên SmartRental.
               </p>
@@ -579,7 +579,7 @@ export default function EkycPage() {
                   <CheckCircle2 size={20} />
                   <span>ĐÃ ĐƯỢC CHỨNG NHẬN</span>
                 </div>
-                <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
+                <div style={{ fontSize: '12px', color: '#738174', marginTop: '4px' }}>
                   Gắn huy hiệu tích xanh uy tín
                 </div>
               </div>
@@ -588,10 +588,10 @@ export default function EkycPage() {
                 <div style={{ fontSize: '13px', color: '#166534', fontWeight: 600, marginBottom: '4px' }}>
                   Thời điểm cấp chứng chỉ
                 </div>
-                <div style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a', marginTop: '8px' }}>
+                <div style={{ fontSize: '16px', fontWeight: 700, color: '#233c2e', marginTop: '8px' }}>
                   {formattedVerifiedDate}
                 </div>
-                <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
+                <div style={{ fontSize: '12px', color: '#738174', marginTop: '4px' }}>
                   Công nghệ: VNPT eKYC IDG
                 </div>
               </div>
@@ -599,61 +599,49 @@ export default function EkycPage() {
 
             {/* Bảng chi tiết thông tin định danh */}
             <div style={{ marginBottom: '28px' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a', marginBottom: '12px' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#233c2e', marginBottom: '12px' }}>
                 Thông tin danh tính đã được kiểm định:
               </h3>
               <div
                 style={{
-                  border: '1px solid #e2e8f0',
+                  border: '1px solid #dde5dc',
                   borderRadius: '12px',
                   overflow: 'hidden',
                   fontSize: '14px',
                 }}
               >
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: '200px 1fr',
+                <div className="sr-details-grid" style={{ display: 'grid', gridTemplateColumns: '200px 1fr',
                     padding: '14px 18px',
-                    background: '#f8fafc',
-                    borderBottom: '1px solid #e2e8f0',
+                    background: '#f5f7f4',
+                    borderBottom: '1px solid #dde5dc',
                   }}
                 >
                   <strong style={{ color: '#475569' }}>Họ và tên chủ thẻ:</strong>
-                  <span style={{ fontWeight: 700, color: '#0f172a' }}>{verifiedName}</span>
+                  <span style={{ fontWeight: 700, color: '#233c2e' }}>{verifiedName}</span>
                 </div>
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: '200px 1fr',
+                <div className="sr-details-grid" style={{ display: 'grid', gridTemplateColumns: '200px 1fr',
                     padding: '14px 18px',
                     background: '#ffffff',
-                    borderBottom: '1px solid #e2e8f0',
+                    borderBottom: '1px solid #dde5dc',
                   }}
                 >
                   <strong style={{ color: '#475569' }}>Số thẻ CCCD:</strong>
-                  <span style={{ fontWeight: 700, color: '#0f172a', letterSpacing: '1px' }}>
+                  <span style={{ fontWeight: 700, color: '#233c2e', letterSpacing: '1px' }}>
                     {verifiedIdCardNumber}
                   </span>
                 </div>
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: '200px 1fr',
+                <div className="sr-details-grid" style={{ display: 'grid', gridTemplateColumns: '200px 1fr',
                     padding: '14px 18px',
-                    background: '#f8fafc',
-                    borderBottom: '1px solid #e2e8f0',
+                    background: '#f5f7f4',
+                    borderBottom: '1px solid #dde5dc',
                   }}
                 >
                   <strong style={{ color: '#475569' }}>Phương thức bảo mật:</strong>
-                  <span style={{ color: '#0f172a' }}>
+                  <span style={{ color: '#233c2e' }}>
                     Trí tuệ nhân tạo VNPT AI (Bóc tách OCR & So khớp khuôn mặt trực tiếp)
                   </span>
                 </div>
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: '200px 1fr',
+                <div className="sr-details-grid" style={{ display: 'grid', gridTemplateColumns: '200px 1fr',
                     padding: '14px 18px',
                     background: '#ffffff',
                   }}
@@ -731,12 +719,12 @@ export default function EkycPage() {
             {/* Tùy chọn xác thực lại khi đổi CCCD mới */}
             <div
               style={{
-                borderTop: '1px dashed #cbd5e1',
+                borderTop: '1px dashed #d5dfd3',
                 paddingTop: '20px',
                 textAlign: 'center',
               }}
             >
-              <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '8px' }}>
+              <p style={{ fontSize: '13px', color: '#738174', marginBottom: '8px' }}>
                 Bạn vừa làm lại thẻ Căn cước công dân gắn chip mới hoặc cần cập nhật lại thông tin cá nhân?
               </p>
               <button
@@ -769,8 +757,8 @@ export default function EkycPage() {
               <div
                 style={{
                   marginBottom: '20px',
-                  background: '#f8fafc',
-                  border: '1px solid #cbd5e1',
+                  background: '#f5f7f4',
+                  border: '1px solid #d5dfd3',
                   borderRadius: '10px',
                   padding: '12px 16px',
                   display: 'flex',
@@ -788,7 +776,7 @@ export default function EkycPage() {
                   onClick={() => setIsReverifying(false)}
                   style={{
                     background: '#ffffff',
-                    border: '1px solid #cbd5e1',
+                    border: '1px solid #d5dfd3',
                     borderRadius: '6px',
                     padding: '6px 12px',
                     fontSize: '12px',
@@ -826,10 +814,10 @@ export default function EkycPage() {
                 <Sparkles size={16} />
                 <span>HỆ THỐNG XÁC THỰC NGƯỜI DÙNG THẬT eKYC CHUẨN VNPT AI</span>
               </div>
-              <h1 style={{ fontSize: '28px', fontWeight: 800, color: '#0f172a', margin: '4px 0 8px 0' }}>
+              <h1 style={{ fontSize: '28px', fontWeight: 800, color: '#233c2e', margin: '4px 0 8px 0' }}>
                 Định Danh Điện Tử An Toàn (eKYC)
               </h1>
-              <p style={{ color: '#64748b', fontSize: '15px', maxWidth: '640px', margin: '0 auto' }}>
+              <p style={{ color: '#738174', fontSize: '15px', maxWidth: '640px', margin: '0 auto' }}>
                 Quy trình gồm 3 bước bắt buộc: <strong>Khai báo thông tin</strong> $\rightarrow${' '}
                 <strong>Chụp CCCD trực tiếp</strong> $\rightarrow$ <strong>Selfie khuôn mặt trực tiếp</strong>. Điểm tin cậy
                 yêu cầu <strong>&gt; 85%</strong>.
@@ -845,7 +833,7 @@ export default function EkycPage() {
             background: '#ffffff',
             padding: '16px 24px',
             borderRadius: '12px',
-            border: '1px solid #e2e8f0',
+            border: '1px solid #dde5dc',
             marginBottom: '28px',
             position: 'relative',
           }}
@@ -867,7 +855,7 @@ export default function EkycPage() {
                 height: '32px',
                 borderRadius: '50%',
                 background: currentStep > 1 ? '#167c5a' : currentStep === 1 ? '#e0f2fe' : '#f1f5f9',
-                color: currentStep > 1 ? '#ffffff' : currentStep === 1 ? '#0369a1' : '#64748b',
+                color: currentStep > 1 ? '#ffffff' : currentStep === 1 ? '#0369a1' : '#738174',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -883,7 +871,7 @@ export default function EkycPage() {
             style={{
               flex: 1,
               height: '2px',
-              background: currentStep > 1 ? '#167c5a' : '#e2e8f0',
+              background: currentStep > 1 ? '#167c5a' : '#dde5dc',
               margin: '0 12px',
             }}
           />
@@ -905,7 +893,7 @@ export default function EkycPage() {
                 height: '32px',
                 borderRadius: '50%',
                 background: currentStep > 2 ? '#167c5a' : currentStep === 2 ? '#e0f2fe' : '#f1f5f9',
-                color: currentStep > 2 ? '#ffffff' : currentStep === 2 ? '#0369a1' : '#64748b',
+                color: currentStep > 2 ? '#ffffff' : currentStep === 2 ? '#0369a1' : '#738174',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -921,7 +909,7 @@ export default function EkycPage() {
             style={{
               flex: 1,
               height: '2px',
-              background: currentStep > 2 ? '#167c5a' : '#e2e8f0',
+              background: currentStep > 2 ? '#167c5a' : '#dde5dc',
               margin: '0 12px',
             }}
           />
@@ -943,7 +931,7 @@ export default function EkycPage() {
                 height: '32px',
                 borderRadius: '50%',
                 background: currentStep >= 3 ? (result?.isSuccess ? '#167c5a' : '#e0f2fe') : '#f1f5f9',
-                color: currentStep >= 3 ? (result?.isSuccess ? '#ffffff' : '#0369a1') : '#64748b',
+                color: currentStep >= 3 ? (result?.isSuccess ? '#ffffff' : '#0369a1') : '#738174',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -965,17 +953,17 @@ export default function EkycPage() {
               background: '#ffffff',
               padding: '32px',
               borderRadius: '16px',
-              border: '1px solid #e2e8f0',
+              border: '1px solid #dde5dc',
               boxShadow: '0 4px 16px rgba(0,0,0,0.03)',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
               <FileText size={22} color="#167c5a" />
-              <h2 style={{ fontSize: '20px', fontWeight: 700, margin: 0, color: '#0f172a' }}>
+              <h2 style={{ fontSize: '20px', fontWeight: 700, margin: 0, color: '#233c2e' }}>
                 Bước 1: Khai báo thông tin cá nhân theo CCCD
               </h2>
             </div>
-            <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '24px' }}>
+            <p style={{ color: '#738174', fontSize: '14px', marginBottom: '24px' }}>
               Vui lòng nhập chính xác thông tin in trên thẻ Căn cước công dân của bạn. Hệ thống AI sẽ tự động đối chiếu
               thông tin này với kết quả quét thẻ ở Bước 2.
             </p>
@@ -1001,7 +989,7 @@ export default function EkycPage() {
             )}
 
             <form onSubmit={handleStep1Submit}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+              <div className="sr-grid-two" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
                     Họ và tên đầy đủ (in hoa) *
@@ -1016,7 +1004,7 @@ export default function EkycPage() {
                       width: '100%',
                       padding: '10px 14px',
                       borderRadius: '8px',
-                      border: '1px solid #cbd5e1',
+                      border: '1px solid #d5dfd3',
                       fontSize: '14px',
                     }}
                   />
@@ -1037,7 +1025,7 @@ export default function EkycPage() {
                       width: '100%',
                       padding: '10px 14px',
                       borderRadius: '8px',
-                      border: '1px solid #cbd5e1',
+                      border: '1px solid #d5dfd3',
                       fontSize: '14px',
                       letterSpacing: '1px',
                     }}
@@ -1045,7 +1033,7 @@ export default function EkycPage() {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+              <div className="sr-grid-three" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '16px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
                     Ngày sinh *
@@ -1059,7 +1047,7 @@ export default function EkycPage() {
                       width: '100%',
                       padding: '10px 14px',
                       borderRadius: '8px',
-                      border: '1px solid #cbd5e1',
+                      border: '1px solid #d5dfd3',
                       fontSize: '14px',
                     }}
                   />
@@ -1076,7 +1064,7 @@ export default function EkycPage() {
                       width: '100%',
                       padding: '10px 14px',
                       borderRadius: '8px',
-                      border: '1px solid #cbd5e1',
+                      border: '1px solid #d5dfd3',
                       fontSize: '14px',
                     }}
                   >
@@ -1099,7 +1087,7 @@ export default function EkycPage() {
                       width: '100%',
                       padding: '10px 14px',
                       borderRadius: '8px',
-                      border: '1px solid #cbd5e1',
+                      border: '1px solid #d5dfd3',
                       fontSize: '14px',
                     }}
                   />
@@ -1119,7 +1107,7 @@ export default function EkycPage() {
                     width: '100%',
                     padding: '10px 14px',
                     borderRadius: '8px',
-                    border: '1px solid #cbd5e1',
+                    border: '1px solid #d5dfd3',
                     fontSize: '14px',
                   }}
                 />
@@ -1139,7 +1127,7 @@ export default function EkycPage() {
                     width: '100%',
                     padding: '10px 14px',
                     borderRadius: '8px',
-                    border: '1px solid #cbd5e1',
+                    border: '1px solid #d5dfd3',
                     fontSize: '14px',
                   }}
                 />
@@ -1147,8 +1135,8 @@ export default function EkycPage() {
 
               <div
                 style={{
-                  background: '#f8fafc',
-                  border: '1px solid #e2e8f0',
+                  background: '#f5f7f4',
+                  border: '1px solid #dde5dc',
                   borderRadius: '8px',
                   padding: '12px 16px',
                   marginBottom: '24px',
@@ -1186,14 +1174,14 @@ export default function EkycPage() {
               background: '#ffffff',
               padding: '32px',
               borderRadius: '16px',
-              border: '1px solid #e2e8f0',
+              border: '1px solid #dde5dc',
               boxShadow: '0 4px 16px rgba(0,0,0,0.03)',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <CreditCard size={22} color="#167c5a" />
-                <h2 style={{ fontSize: '20px', fontWeight: 700, margin: 0, color: '#0f172a' }}>
+                <h2 style={{ fontSize: '20px', fontWeight: 700, margin: 0, color: '#233c2e' }}>
                   Bước 2: Chụp ảnh Căn cước công dân trực tiếp qua Camera
                 </h2>
               </div>
@@ -1206,7 +1194,7 @@ export default function EkycPage() {
                     padding: '4px 10px',
                     borderRadius: '6px',
                     background: cccdSubStep === 'front' ? '#167c5a' : '#f1f5f9',
-                    color: cccdSubStep === 'front' ? '#ffffff' : '#64748b',
+                    color: cccdSubStep === 'front' ? '#ffffff' : '#738174',
                   }}
                 >
                   Mặt trước {frontFile && '✓'}
@@ -1218,7 +1206,7 @@ export default function EkycPage() {
                     padding: '4px 10px',
                     borderRadius: '6px',
                     background: cccdSubStep === 'back' ? '#167c5a' : '#f1f5f9',
-                    color: cccdSubStep === 'back' ? '#ffffff' : '#64748b',
+                    color: cccdSubStep === 'back' ? '#ffffff' : '#738174',
                   }}
                 >
                   Mặt sau {backFile && '✓'}
@@ -1274,7 +1262,7 @@ export default function EkycPage() {
             <div
               style={{
                 position: 'relative',
-                background: '#0f172a',
+                background: '#233c2e',
                 borderRadius: '12px',
                 overflow: 'hidden',
                 aspectRatio: '16/9',
@@ -1490,17 +1478,17 @@ export default function EkycPage() {
             </div>
 
             {/* Bảng xem trước tóm tắt 2 mặt đã chụp */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', borderTop: '1px solid #e2e8f0', paddingTop: '20px' }}>
+            <div className="sr-grid-two" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', borderTop: '1px solid #dde5dc', paddingTop: '20px' }}>
               <div
                 style={{
-                  border: '1px solid #cbd5e1',
+                  border: '1px solid #d5dfd3',
                   borderRadius: '10px',
                   padding: '12px',
-                  background: frontFile ? '#f0fdf4' : '#f8fafc',
+                  background: frontFile ? '#f0fdf4' : '#f5f7f4',
                   textAlign: 'center',
                 }}
               >
-                <div style={{ fontSize: '13px', fontWeight: 600, color: frontFile ? '#166534' : '#64748b', marginBottom: '8px' }}>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: frontFile ? '#166534' : '#738174', marginBottom: '8px' }}>
                   {frontFile ? '✓ Mặt trước: Đã chụp' : '○ Mặt trước: Chưa chụp'}
                 </div>
                 {frontPreview ? (
@@ -1514,14 +1502,14 @@ export default function EkycPage() {
 
               <div
                 style={{
-                  border: '1px solid #cbd5e1',
+                  border: '1px solid #d5dfd3',
                   borderRadius: '10px',
                   padding: '12px',
-                  background: backFile ? '#f0fdf4' : '#f8fafc',
+                  background: backFile ? '#f0fdf4' : '#f5f7f4',
                   textAlign: 'center',
                 }}
               >
-                <div style={{ fontSize: '13px', fontWeight: 600, color: backFile ? '#166534' : '#64748b', marginBottom: '8px' }}>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: backFile ? '#166534' : '#738174', marginBottom: '8px' }}>
                   {backFile ? '✓ Mặt sau: Đã chụp' : '○ Mặt sau: Chưa chụp'}
                 </div>
                 {backPreview ? (
@@ -1567,17 +1555,17 @@ export default function EkycPage() {
               background: '#ffffff',
               padding: '32px',
               borderRadius: '16px',
-              border: '1px solid #e2e8f0',
+              border: '1px solid #dde5dc',
               boxShadow: '0 4px 16px rgba(0,0,0,0.03)',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
               <Smile size={22} color="#167c5a" />
-              <h2 style={{ fontSize: '20px', fontWeight: 700, margin: 0, color: '#0f172a' }}>
+              <h2 style={{ fontSize: '20px', fontWeight: 700, margin: 0, color: '#233c2e' }}>
                 Bước 3: Chụp ảnh chân dung Selfie trực tiếp (Face Matching)
               </h2>
             </div>
-            <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '20px' }}>
+            <p style={{ color: '#738174', fontSize: '14px', marginBottom: '20px' }}>
               Vui lòng nhìn thẳng vào ống kính camera phía trước. Không đeo khẩu trang hoặc kính râm. Hệ thống VNPT AI sẽ
               đối chiếu khuôn mặt selfie này với ảnh chân dung trên thẻ CCCD vừa chụp (ngưỡng an toàn &gt; 85%).
             </p>
@@ -1626,7 +1614,7 @@ export default function EkycPage() {
             <div
               style={{
                 position: 'relative',
-                background: '#0f172a',
+                background: '#233c2e',
                 borderRadius: '12px',
                 overflow: 'hidden',
                 aspectRatio: '4/3',
@@ -1759,7 +1747,7 @@ export default function EkycPage() {
                   <span>Đã thu thập đầy đủ dữ liệu 3 bước. Sẵn sàng thẩm định AI!</span>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '16px', fontSize: '13px', color: '#334155' }}>
+                <div className="sr-grid-two" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '16px', fontSize: '13px', color: '#334155' }}>
                   <div>
                     <div><strong>Họ tên:</strong> {personalInfo.fullName}</div>
                     <div><strong>Số CCCD:</strong> {personalInfo.idCardNumber}</div>
@@ -1769,15 +1757,15 @@ export default function EkycPage() {
 
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <div style={{ flex: 1, textAlign: 'center' }}>
-                      <img src={frontPreview!} alt="Front" style={{ width: '100%', height: '60px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #cbd5e1' }} />
+                      <img src={frontPreview!} alt="Front" style={{ width: '100%', height: '60px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #d5dfd3' }} />
                       <span style={{ fontSize: '10px', color: '#166534', fontWeight: 600 }}>CCCD Trước</span>
                     </div>
                     <div style={{ flex: 1, textAlign: 'center' }}>
-                      <img src={backPreview!} alt="Back" style={{ width: '100%', height: '60px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #cbd5e1' }} />
+                      <img src={backPreview!} alt="Back" style={{ width: '100%', height: '60px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #d5dfd3' }} />
                       <span style={{ fontSize: '10px', color: '#166534', fontWeight: 600 }}>CCCD Sau</span>
                     </div>
                     <div style={{ flex: 1, textAlign: 'center' }}>
-                      <img src={selfiePreview!} alt="Selfie" style={{ width: '100%', height: '60px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #cbd5e1' }} />
+                      <img src={selfiePreview!} alt="Selfie" style={{ width: '100%', height: '60px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #d5dfd3' }} />
                       <span style={{ fontSize: '10px', color: '#166534', fontWeight: 600 }}>Ảnh Selfie</span>
                     </div>
                   </div>
@@ -1786,8 +1774,8 @@ export default function EkycPage() {
                 {/* Cổng xác thực VNPT eKYC Trực Tiếp (Live Production) */}
                 <div
                   style={{
-                    background: '#f8fafc',
-                    border: '1px solid #e2e8f0',
+                    background: '#f5f7f4',
+                    border: '1px solid #dde5dc',
                     borderRadius: '10px',
                     padding: '14px 18px',
                     marginTop: '16px',
@@ -1801,10 +1789,10 @@ export default function EkycPage() {
                 >
                   <ShieldCheck size={26} color="#167c5a" style={{ flexShrink: 0 }} />
                   <div>
-                    <div style={{ fontWeight: 700, color: '#0f172a', marginBottom: '2px' }}>
+                    <div style={{ fontWeight: 700, color: '#233c2e', marginBottom: '2px' }}>
                       Cổng xác thực VNPT eKYC Trực Tiếp (Live Production)
                     </div>
-                    <div style={{ fontSize: '12px', color: '#64748b' }}>
+                    <div style={{ fontSize: '12px', color: '#738174' }}>
                       Hình ảnh chụp trực tiếp sẽ được gửi tới VNPT eKYC OCR và Face Compare. Yêu cầu độ tương đồng khuôn mặt đạt trên 85.0% và thông tin CCCD trùng khớp 100% để cấp chứng nhận.
                     </div>
                   </div>
@@ -1850,7 +1838,7 @@ export default function EkycPage() {
               background: '#ffffff',
               padding: '48px 32px',
               borderRadius: '16px',
-              border: '1px solid #e2e8f0',
+              border: '1px solid #dde5dc',
               textAlign: 'center',
               boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
             }}
@@ -1858,13 +1846,13 @@ export default function EkycPage() {
             <div style={{ width: '64px', height: '64px', margin: '0 auto 20px auto', borderRadius: '50%', background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <RefreshCw size={32} color="#167c5a" style={{ animation: 'spin 1.5s linear infinite' }} />
             </div>
-            <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#0f172a', marginBottom: '8px' }}>
+            <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#233c2e', marginBottom: '8px' }}>
               Đang phân tích trí tuệ nhân tạo (VNPT AI OCR & Face Compare)...
             </h3>
-            <p style={{ color: '#64748b', fontSize: '14px', maxWidth: '500px', margin: '0 auto 24px auto' }}>
+            <p style={{ color: '#738174', fontSize: '14px', maxWidth: '500px', margin: '0 auto 24px auto' }}>
               {processingStage}
             </p>
-            <div style={{ width: '280px', height: '6px', background: '#e2e8f0', borderRadius: '3px', margin: '0 auto', overflow: 'hidden' }}>
+            <div style={{ width: '280px', height: '6px', background: '#dde5dc', borderRadius: '3px', margin: '0 auto', overflow: 'hidden' }}>
               <div style={{ width: '70%', height: '100%', background: '#167c5a', borderRadius: '3px', animation: 'indeterminate 2s infinite linear' }} />
             </div>
           </div>
@@ -1876,7 +1864,7 @@ export default function EkycPage() {
               background: '#ffffff',
               padding: '36px',
               borderRadius: '16px',
-              border: '1px solid #e2e8f0',
+              border: '1px solid #dde5dc',
               boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
             }}
           >
@@ -1936,36 +1924,36 @@ export default function EkycPage() {
                     <div style={{ fontSize: '18px', fontWeight: 700, color: '#15803d', marginTop: '6px' }}>
                       ĐÃ ĐƯỢC PHÊ DUYỆT
                     </div>
-                    <div style={{ fontSize: '12px', color: '#64748b' }}>Cập nhật lúc: {new Date().toLocaleTimeString('vi-VN')}</div>
+                    <div style={{ fontSize: '12px', color: '#738174' }}>Cập nhật lúc: {new Date().toLocaleTimeString('vi-VN')}</div>
                   </div>
                 </div>
 
                 {/* Bảng đối chiếu thông tin đã bóc tách OCR */}
                 <div style={{ marginBottom: '28px' }}>
-                  <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a', marginBottom: '12px' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#233c2e', marginBottom: '12px' }}>
                     Kết quả bóc tách dữ liệu CCCD từ VNPT AI (OCR):
                   </h3>
                   <div
                     style={{
-                      border: '1px solid #e2e8f0',
+                      border: '1px solid #dde5dc',
                       borderRadius: '10px',
                       overflow: 'hidden',
                       fontSize: '14px',
                     }}
                   >
-                    <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr', padding: '12px 16px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                    <div className="sr-details-grid" style={{ display: 'grid', gridTemplateColumns: '180px 1fr', padding: '12px 16px', background: '#f5f7f4', borderBottom: '1px solid #dde5dc' }}>
                       <strong style={{ color: '#475569' }}>Số thẻ CCCD:</strong>
-                      <span style={{ fontWeight: 700, color: '#0f172a' }}>{result.idCardNumberMasked || personalInfo.idCardNumber}</span>
+                      <span style={{ fontWeight: 700, color: '#233c2e' }}>{result.idCardNumberMasked || personalInfo.idCardNumber}</span>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr', padding: '12px 16px', background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
+                    <div className="sr-details-grid" style={{ display: 'grid', gridTemplateColumns: '180px 1fr', padding: '12px 16px', background: '#ffffff', borderBottom: '1px solid #dde5dc' }}>
                       <strong style={{ color: '#475569' }}>Họ và tên chủ thẻ:</strong>
-                      <span style={{ fontWeight: 700, color: '#0f172a' }}>{result.idCardName || personalInfo.fullName}</span>
+                      <span style={{ fontWeight: 700, color: '#233c2e' }}>{result.idCardName || personalInfo.fullName}</span>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr', padding: '12px 16px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                    <div className="sr-details-grid" style={{ display: 'grid', gridTemplateColumns: '180px 1fr', padding: '12px 16px', background: '#f5f7f4', borderBottom: '1px solid #dde5dc' }}>
                       <strong style={{ color: '#475569' }}>Ngày tháng năm sinh:</strong>
                       <span>{result.idCardDob || personalInfo.dob}</span>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr', padding: '12px 16px', background: '#ffffff' }}>
+                    <div className="sr-details-grid" style={{ display: 'grid', gridTemplateColumns: '180px 1fr', padding: '12px 16px', background: '#ffffff' }}>
                       <strong style={{ color: '#475569' }}>Địa chỉ thường trú:</strong>
                       <span>{result.idCardAddress || personalInfo.address}</span>
                     </div>
@@ -2018,7 +2006,7 @@ export default function EkycPage() {
                   <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#991b1b', margin: '0 0 6px 0' }}>
                     Xác Thực eKYC Chưa Đạt Yêu Cầu
                   </h2>
-                  <p style={{ color: '#64748b', fontSize: '14px' }}>
+                  <p style={{ color: '#738174', fontSize: '14px' }}>
                     Hệ thống không thể cấp chứng nhận do không vượt qua bài kiểm tra đối chiếu an toàn.
                   </p>
                 </div>
@@ -2038,11 +2026,11 @@ export default function EkycPage() {
                   <strong>Lý do từ chối:</strong> {errorMessage}
                 </div>
 
-                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '16px', marginBottom: '28px' }}>
+                <div style={{ background: '#f5f7f4', border: '1px solid #dde5dc', borderRadius: '10px', padding: '16px', marginBottom: '28px' }}>
                   <div style={{ fontWeight: 700, color: '#334155', fontSize: '14px', marginBottom: '6px' }}>
                     Gợi ý khắc phục khi chụp lại:
                   </div>
-                  <ul style={{ margin: 0, paddingLeft: '20px', color: '#64748b', fontSize: '13px', lineHeight: 1.6 }}>
+                  <ul style={{ margin: 0, paddingLeft: '20px', color: '#738174', fontSize: '13px', lineHeight: 1.6 }}>
                     <li>Đảm bảo nơi chụp có đủ ánh sáng tự nhiên, không bị bóng mờ che khuất khuôn mặt.</li>
                     <li>Căn chỉnh toàn bộ 4 góc của thẻ CCCD nằm gọn bên trong khung hướng dẫn.</li>
                     <li>Khi chụp selfie, nhìn thẳng trực diện vào ống kính, không đeo kính râm hay khẩu trang.</li>
