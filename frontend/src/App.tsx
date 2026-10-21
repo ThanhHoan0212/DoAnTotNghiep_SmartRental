@@ -15,6 +15,7 @@ import ContractsPage from "./pages/ContractsPage";
 import EkycPage from "./pages/EkycPage";
 
 import VnpayReturnPage from "./pages/VnpayReturnPage";
+import ChatbotWidget from "./components/ChatbotWidget";
 
 function App() {
   return (
@@ -69,6 +70,8 @@ function App() {
           }
         />
       </Routes>
+
+      <ChatbotWidget />
     </AuthProvider>
   );
 }

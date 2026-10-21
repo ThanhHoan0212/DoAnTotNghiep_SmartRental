@@ -60,6 +60,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/rooms/search/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/rooms/districts-summary").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/favorites/{roomId:[0-9a-fA-F-]{36}}/status").permitAll()
+                        .requestMatchers("/api/v1/ai/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

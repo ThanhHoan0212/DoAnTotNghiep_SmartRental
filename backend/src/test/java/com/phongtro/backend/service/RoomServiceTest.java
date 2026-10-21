@@ -44,6 +44,9 @@ class RoomServiceTest {
     @Mock
     private ContractRepository contractRepository;
 
+    @Mock
+    private com.phongtro.backend.client.AiServiceClient aiServiceClient;
+
     @InjectMocks
     private RoomServiceImpl roomService;
 

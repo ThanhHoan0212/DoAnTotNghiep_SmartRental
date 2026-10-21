@@ -5,6 +5,7 @@ import { roomService } from "../services/roomService";
 import { favoriteService } from "../services/favoriteService";
 import { useAuth } from "../context/AuthContext";
 import { RentalRequestModal } from "../components/RentalRequestModal";
+import PriceTrendWidget from "../components/PriceTrendWidget";
 import type { RoomDetail } from "../types/room";
 import type { Contract } from "../types/contract";
 
@@ -259,6 +260,11 @@ export default function RoomDetailPage() {
                 {room.area} m²
               </span>
             </div>
+
+            {/* Dự báo giá thị trường AI */}
+            {room.district && (
+              <PriceTrendWidget district={room.district} />
+            )}
 
             <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '24px 0' }} />
 

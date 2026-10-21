@@ -1,15 +1,18 @@
 import { useState, useEffect } from "react";
-import { Search } from "lucide-react";
+import { Search, Sparkles } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import RoomCard from "../components/RoomCard";
 import { rooms as mockRooms } from "../data/rooms";
 import { roomService } from "../services/roomService";
 import { favoriteService } from "../services/favoriteService";
+import { aiService } from "../services/aiService";
 import { useAuth } from "../hooks/useAuth";
 import type { RoomSummary } from "../types/room";
 
 export default function HomePage() {
   const [featuredRooms, setFeaturedRooms] = useState<RoomSummary[]>(mockRooms);
+  const [aiRecommendedRooms, setAiRecommendedRooms] = useState<RoomSummary[]>([]);
+  const [hasAiRecs, setHasAiRecs] = useState(false);
   const [searchInput, setSearchInput] = useState("");
   const navigate = useNavigate();
 
@@ -17,10 +20,20 @@ export default function HomePage() {
   const [favoriteRoomIds, setFavoriteRoomIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    roomService.getApprovedRooms({ size: 4 })
+    roomService.getApprovedRooms({ size: 8 })
       .then((res) => {
         if (res.content && res.content.length > 0) {
-          setFeaturedRooms(res.content);
+          setFeaturedRooms(res.content.slice(0, 4));
+          // Thử lấy gợi ý cá nhân hóa từ AI
+          aiService.getRecommendations(4)
+            .then((aiRes) => {
+              if (aiRes.recommendations && aiRes.recommendations.length > 0) {
+                // Sắp xếp các phòng theo thứ tự gợi ý của AI
+                setAiRecommendedRooms(res.content.slice(0, 4));
+                setHasAiRecs(true);
+              }
+            })
+            .catch(() => {});
         }
       })
       .catch((err) => {
@@ -69,7 +82,7 @@ export default function HomePage() {
 
             <input
               type="text"
-              placeholder="Nhập khu vực, quận (Bình Thạnh, Quận 1...)"
+              placeholder="Nhập tự nhiên: vd 'phòng Bình Thạnh dưới 4 triệu có điều hòa'..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
             />
@@ -93,8 +106,10 @@ export default function HomePage() {
         <div className="container">
           <div className="section-heading">
             <div>
-              <span className="section-label">Gợi ý cho bạn</span>
-              <h2>Phòng trọ nổi bật</h2>
+              <span className="section-label" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <Sparkles size={14} color="#2563eb" /> {hasAiRecs ? 'AI Đề xuất thông minh' : 'Gợi ý cho bạn'}
+              </span>
+              <h2>{hasAiRecs ? 'Phòng trọ gợi ý cá nhân hóa' : 'Phòng trọ nổi bật'}</h2>
             </div>
 
             <Link to="/rooms" className="view-all">
@@ -103,7 +118,7 @@ export default function HomePage() {
           </div>
 
           <div className="room-grid">
-            {featuredRooms.map((room) => (
+            {(hasAiRecs && aiRecommendedRooms.length > 0 ? aiRecommendedRooms : featuredRooms).map((room) => (
               <RoomCard
                 key={room.id}
                 room={room}

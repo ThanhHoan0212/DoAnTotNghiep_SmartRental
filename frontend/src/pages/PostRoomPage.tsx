@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Sparkles, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { roomService } from '../services/roomService';
+import { aiService } from '../services/aiService';
 import type { Amenity, RoomImageRequest } from '../types/room';
+import type { FraudCheckResponse } from '../types/ai';
 import { ApiError } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 
@@ -18,6 +21,10 @@ export default function PostRoomPage() {
   const [ward, setWard] = useState('');
   const [district, setDistrict] = useState('Bình Thạnh');
   const [city] = useState('Hồ Chí Minh');
+
+  // AI Fraud Check state
+  const [isAiChecking, setIsAiChecking] = useState(false);
+  const [aiEvaluation, setAiEvaluation] = useState<FraudCheckResponse | null>(null);
 
   // Tiện ích
   const [availableAmenities, setAvailableAmenities] = useState<Amenity[]>([]);
@@ -87,6 +94,37 @@ export default function PostRoomPage() {
         isPrimary: idx === index
       }))
     );
+  };
+
+  const handleRunAiEvaluation = async () => {
+    if (!title.trim() || !price || !area || !district) {
+      alert('Vui lòng nhập tối thiểu Tiêu đề, Giá thuê, Diện tích và Quận để AI đánh giá!');
+      return;
+    }
+    const priceNum = parseFloat(price);
+    const areaNum = parseFloat(area);
+    if (isNaN(priceNum) || isNaN(areaNum)) {
+      alert('Giá và diện tích phải là số hợp lệ.');
+      return;
+    }
+
+    setIsAiChecking(true);
+    try {
+      const result = await aiService.checkListingFraud({
+        title: title.trim(),
+        description: description.trim() || 'Mô tả phòng trọ đầy đủ tiện nghi, an ninh tốt.',
+        price: priceNum,
+        area: areaNum,
+        district,
+        address: address.trim() || 'Hồ Chí Minh',
+      });
+      setAiEvaluation(result);
+    } catch (err) {
+      console.warn('Lỗi kiểm tra AI:', err);
+      alert('Dịch vụ AI kiểm duyệt tạm thời không phản hồi.');
+    } finally {
+      setIsAiChecking(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -426,6 +464,88 @@ export default function PostRoomPage() {
               ))}
             </div>
           )}
+
+          {/* AI Tiền kiểm duyệt & Đánh giá an toàn tin đăng */}
+          <div
+            style={{
+              background: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              borderRadius: '12px',
+              padding: '16px 20px',
+              marginBottom: '24px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Sparkles size={20} color="#2563eb" />
+                <div>
+                  <strong style={{ fontSize: '14px', color: '#1e293b' }}>AI Tiền kiểm duyệt & Đánh giá tin đăng</strong>
+                  <div style={{ fontSize: '12px', color: '#64748b' }}>Phát hiện nguy cơ giá ảo, nội dung bất thường để tin đăng được duyệt nhanh nhất</div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleRunAiEvaluation}
+                disabled={isAiChecking}
+                style={{
+                  background: '#eff6ff',
+                  color: '#1d4ed8',
+                  border: '1px solid #bfdbfe',
+                  borderRadius: '8px',
+                  padding: '8px 16px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  cursor: isAiChecking ? 'default' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <Sparkles size={15} />
+                {isAiChecking ? 'AI đang phân tích...' : 'Kiểm tra bằng AI'}
+              </button>
+            </div>
+
+            {aiEvaluation && (
+              <div
+                style={{
+                  marginTop: '14px',
+                  padding: '12px 16px',
+                  borderRadius: '10px',
+                  background: aiEvaluation.risk_level === 'LOW' ? '#f0fdf4' : aiEvaluation.risk_level === 'MEDIUM' ? '#fefce8' : '#fef2f2',
+                  border: `1px solid ${aiEvaluation.risk_level === 'LOW' ? '#bbf7d0' : aiEvaluation.risk_level === 'MEDIUM' ? '#fef08a' : '#fecaca'}`,
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                  {aiEvaluation.risk_level === 'LOW' ? (
+                    <ShieldCheck size={18} color="#16a34a" />
+                  ) : (
+                    <AlertTriangle size={18} color={aiEvaluation.risk_level === 'MEDIUM' ? '#ca8a04' : '#dc2626'} />
+                  )}
+                  <strong
+                    style={{
+                      fontSize: '14px',
+                      color: aiEvaluation.risk_level === 'LOW' ? '#166534' : aiEvaluation.risk_level === 'MEDIUM' ? '#854d0e' : '#991b1b',
+                    }}
+                  >
+                    Mức độ rủi ro: {aiEvaluation.risk_level === 'LOW' ? 'THẤP (An toàn)' : aiEvaluation.risk_level === 'MEDIUM' ? 'TRUNG BÌNH' : 'CAO (Dễ bị từ chối)'}
+                  </strong>
+                  <span style={{ fontSize: '12px', color: '#64748b' }}>
+                    (Điểm AI: {Math.round(aiEvaluation.fraud_score * 100)}/100)
+                  </span>
+                </div>
+
+                {aiEvaluation.reasons && aiEvaluation.reasons.length > 0 && (
+                  <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '12px', color: '#475569', lineHeight: '1.5' }}>
+                    {aiEvaluation.reasons.map((r, i) => (
+                      <li key={i}>{r}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+          </div>
 
           <button
             type="submit"

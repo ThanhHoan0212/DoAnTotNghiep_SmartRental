@@ -22,6 +22,9 @@ public class WebClientConfig {
     @Value("${app.ai-service.timeout-seconds:5}")
     private int timeoutSeconds;
 
+    @Value("${app.ai-service.api-key:smartrental-ai-secret-key-2026}")
+    private String aiServiceApiKey;
+
     @Bean
     public WebClient aiServiceWebClient() {
         HttpClient httpClient = HttpClient.create()
@@ -33,6 +36,7 @@ public class WebClientConfig {
 
         return WebClient.builder()
                 .baseUrl(aiServiceBaseUrl)
+                .defaultHeader("X-Internal-Api-Key", aiServiceApiKey)
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .build();
     }

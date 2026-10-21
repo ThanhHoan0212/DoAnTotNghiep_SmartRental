@@ -1,5 +1,6 @@
 package com.phongtro.backend.service.impl;
 
+import com.phongtro.backend.client.AiServiceClient;
 import com.phongtro.backend.common.PageResponse;
 import com.phongtro.backend.dto.request.CreateRoomRequest;
 import com.phongtro.backend.dto.request.RoomImageRequest;
@@ -39,6 +40,8 @@ public class RoomServiceImpl implements RoomService {
     private final AmenityRepository amenityRepository;
     private final RoomMapper roomMapper;
     private final ContractRepository contractRepository;
+    private final AiServiceClient aiServiceClient;
+
 
     @Override
     @Transactional
@@ -91,6 +94,11 @@ public class RoomServiceImpl implements RoomService {
 
         Room savedRoom = roomRepository.save(room);
         log.info("User [{}] created room listing [{}] with status [{}]", landlordEmail, savedRoom.getId(), savedRoom.getStatus());
+
+        if (savedRoom.getStatus() == RoomStatus.APPROVED) {
+            syncRoomToAi(savedRoom);
+        }
+
         return roomMapper.toRoomResponse(savedRoom);
     }
 
@@ -284,6 +292,31 @@ public class RoomServiceImpl implements RoomService {
         room.setStatus(status);
         Room updated = roomRepository.save(room);
         log.info("Admin updated room [{}] status to [{}]", roomId, status);
+
+        if (status == RoomStatus.APPROVED) {
+            syncRoomToAi(updated);
+        }
+
         return roomMapper.toRoomResponse(updated);
     }
+
+    private void syncRoomToAi(Room room) {
+        try {
+            List<String> amenities = (room.getAmenities() != null)
+                    ? room.getAmenities().stream().map(Amenity::getName).toList()
+                    : List.of();
+            Map<String, Object> feature = Map.of(
+                    "room_id", room.getId().toString(),
+                    "title", room.getTitle(),
+                    "district", room.getDistrict(),
+                    "price", room.getPrice(),
+                    "area", room.getArea(),
+                    "amenities", amenities
+            );
+            aiServiceClient.syncRoomFeature(feature);
+        } catch (Exception ex) {
+            log.warn("Failed to trigger syncRoomToAi for room {}: {}", room.getId(), ex.getMessage());
+        }
+    }
 }
+
